@@ -1,0 +1,20 @@
+{
+  "name": "ba-system",
+  "version": "1.0.0",
+  "description": "MERN技术栈项目，包含前端和后端",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"yarn workspace backend dev\" \"yarn workspace frontend dev\"",
+    "build": "yarn workspace frontend build && yarn workspace backend build",
+    "start": "yarn workspace backend start",
+    "init-db": "node backend/scripts/createAdmin.js",
+    "init-db-ts": "yarn workspace backend init-db"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
