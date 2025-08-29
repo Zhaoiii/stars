@@ -8,12 +8,7 @@ import {
 import { ConfigProvider } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { AuthProvider } from "./contexts/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import LoginForm from "./components/LoginForm";
-import Dashboard from "./components/Dashboard";
-import HomePage from "./components/HomePage";
-import UserManagement from "./components/UserManagement";
-import TestPage from "./components/TestPage";
+import { routerConfig } from "./routes/routerConfig";
 
 const App: React.FC = () => {
   return (
@@ -21,30 +16,28 @@ const App: React.FC = () => {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/test" element={<TestPage />} />
-            <Route path="/login" element={<LoginForm />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* 根路径重定向到登录 */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
 
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<HomePage />} />
+            {/* 动态路由配置 */}
+            {routerConfig.map((route) => (
               <Route
-                path="users"
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <UserManagement />
-                  </ProtectedRoute>
-                }
+                key={route.path}
+                path={route.path}
+                element={route.element}
+                children={route.children?.map((child) => (
+                  <Route
+                    key={child.path || "index"}
+                    index={child.index}
+                    path={child.path}
+                    element={child.element}
+                  />
+                ))}
               />
-            </Route>
+            ))}
 
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            {/* 其他路径重定向到登录 */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </Router>
       </AuthProvider>
