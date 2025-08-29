@@ -23,7 +23,7 @@ const LoginForm: React.FC = () => {
       const response = await authService.login(values);
       login(response.token, response.user);
       message.success("登录成功");
-      navigate("/dashboard");
+      navigate("/");
     } catch (error: any) {
       message.error(error.response?.data?.message || "登录失败");
     } finally {
@@ -37,7 +37,7 @@ const LoginForm: React.FC = () => {
       const response = await authService.register(values);
       login(response.token, response.user);
       message.success("注册成功");
-      navigate("/dashboard");
+      navigate("/");
     } catch (error: any) {
       message.error(error.response?.data?.message || "注册失败");
     } finally {
@@ -177,4 +177,3 @@ const LoginForm: React.FC = () => {
 };
 
 export default LoginForm;
-

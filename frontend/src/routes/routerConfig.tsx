@@ -6,6 +6,11 @@ import StudentManagementPage from "../pages/StudentManagement/StudentManagementP
 import LoginForm from "../components/LoginForm";
 import Layout from "../components/Layout";
 import ProtectedRoute from "../components/ProtectedRoute";
+import AssessmentToolsPage from "../pages/AssessmentAdmin/AssessmentTools/AssessmentToolsPage";
+import ModulesPage from "../pages/AssessmentAdmin/Modules/ModulesPage";
+import DomainsPage from "../pages/AssessmentAdmin/Domains/DomainsPage";
+import StagesPage from "../pages/AssessmentAdmin/Stages/StagesPage";
+import ItemsPage from "../pages/AssessmentAdmin/Items/ItemsPage";
 
 // React Router 路由配置
 export const routerConfig: RouteObject[] = [
@@ -36,6 +41,26 @@ export const routerConfig: RouteObject[] = [
       {
         path: "students",
         element: <StudentManagementPage />,
+      },
+      {
+        path: "assessment/tools",
+        element: <AssessmentToolsPage />,
+      },
+      {
+        path: "assessment/modules",
+        element: <ModulesPage />,
+      },
+      {
+        path: "assessment/domains",
+        element: <DomainsPage />,
+      },
+      {
+        path: "assessment/stages",
+        element: <StagesPage />,
+      },
+      {
+        path: "assessment/items",
+        element: <ItemsPage />,
       },
     ],
   },

@@ -5,6 +5,11 @@ import { connectDB } from "./config/database";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/users";
 import studentRoutes from "./routes/students";
+import assessmentToolSimpleRoutes from "./routes/assessmentToolSimple";
+import assessmentModulesRoutes from "./routes/assessmentModules";
+import assessmentDomainsRoutes from "./routes/assessmentDomains";
+import assessmentStagesRoutes from "./routes/assessmentStages";
+import assessmentItemsRoutes from "./routes/assessmentItems";
 
 dotenv.config();
 
@@ -20,6 +25,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/students", studentRoutes);
+app.use("/api/assessment/tools", assessmentToolSimpleRoutes);
+app.use("/api/assessment/modules", assessmentModulesRoutes);
+app.use("/api/assessment/domains", assessmentDomainsRoutes);
+app.use("/api/assessment/stages", assessmentStagesRoutes);
+app.use("/api/assessment/items", assessmentItemsRoutes);
 
 // 健康检查
 app.get("/health", (req, res) => {

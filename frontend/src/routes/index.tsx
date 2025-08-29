@@ -1,5 +1,14 @@
 import React from "react";
-import { UserOutlined, TeamOutlined, BookOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  TeamOutlined,
+  BookOutlined,
+  ToolOutlined,
+  ApartmentOutlined,
+  ClusterOutlined,
+  NodeIndexOutlined,
+  ProfileOutlined,
+} from "@ant-design/icons";
 import { UserRole } from "../types/user";
 import type { MenuProps } from "antd";
 
@@ -8,6 +17,11 @@ import HomePage from "../pages/HomePage";
 import UserManagementPage from "../pages/UserManagementPage";
 import StudentManagementPage from "../pages/StudentManagement/StudentManagementPage";
 import LoginForm from "../components/LoginForm";
+import AssessmentToolsPage from "../pages/AssessmentAdmin/AssessmentTools/AssessmentToolsPage";
+import ModulesPage from "../pages/AssessmentAdmin/ModulesPage";
+import DomainsPage from "../pages/AssessmentAdmin/DomainsPage";
+import StagesPage from "../pages/AssessmentAdmin/StagesPage";
+import ItemsPage from "../pages/AssessmentAdmin/ItemsPage";
 
 // 路由配置接口
 export interface AppRoute {
@@ -32,19 +46,12 @@ export const routes: AppRoute[] = [
   {
     path: "/login",
     element: <LoginForm />,
-    meta: {
-      title: "登录",
-      showInMenu: false,
-    },
+    meta: { title: "登录", showInMenu: false },
   },
   {
     path: "/",
-    element: <div>Dashboard Layout</div>, // 这里会被 Layout 组件替换
-    meta: {
-      title: "仪表板",
-      requiresAuth: true,
-      showInMenu: false,
-    },
+    element: <div>Dashboard Layout</div>,
+    meta: { title: "仪表板", requiresAuth: true, showInMenu: false },
     children: [
       {
         path: "/",
@@ -78,6 +85,66 @@ export const routes: AppRoute[] = [
           requiresAuth: true,
           showInMenu: true,
           order: 3,
+        },
+      },
+      {
+        path: "/assessment/tools",
+        element: <AssessmentToolsPage />,
+        meta: {
+          title: "评估工具",
+          icon: <ToolOutlined />,
+          requiresAuth: true,
+          requiredRole: UserRole.ADMIN,
+          showInMenu: true,
+          order: 4,
+        },
+      },
+      {
+        path: "/assessment/modules",
+        element: <ModulesPage />,
+        meta: {
+          title: "模块配置",
+          icon: <ApartmentOutlined />,
+          requiresAuth: true,
+          requiredRole: UserRole.ADMIN,
+          showInMenu: true,
+          order: 5,
+        },
+      },
+      {
+        path: "/assessment/domains",
+        element: <DomainsPage />,
+        meta: {
+          title: "领域配置",
+          icon: <ClusterOutlined />,
+          requiresAuth: true,
+          requiredRole: UserRole.ADMIN,
+          showInMenu: true,
+          order: 6,
+        },
+      },
+      {
+        path: "/assessment/stages",
+        element: <StagesPage />,
+        meta: {
+          title: "阶段配置",
+          icon: <NodeIndexOutlined />,
+          requiresAuth: true,
+          requiredRole: UserRole.ADMIN,
+          showInMenu: true,
+          order: 7,
+        },
+      },
+      {
+        path: "/assessment/items",
+        element: <ItemsPage />,
+        meta: {
+          title: "项目配置",
+          icon: <ProfileOutlined />,
+          requiresAuth: true,
+          requiredRole: UserRole.ADMIN,
+          showInMenu: true,
+          order: 8,
         },
       },
     ],
