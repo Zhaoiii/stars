@@ -1,5 +1,5 @@
 import React from "react";
-import UserManagement from "../components/UserManagement";
+import UserManagement from "./UserManagement";
 
 const UserManagementPage: React.FC = () => {
   return <UserManagement />;

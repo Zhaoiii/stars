@@ -7,13 +7,17 @@ import type { MenuProps } from "antd";
 import HomePage from "../pages/HomePage";
 import UserManagementPage from "../pages/UserManagementPage";
 import StudentManagementPage from "../pages/StudentManagement/StudentManagementPage";
-import LoginForm from "../components/LoginForm";
+import LoginForm from "../pages/LoginForm";
+import ProtectedRoute from "../components/ProtectedRoute";
+import Layout from "../components/Layout";
+import TreeNodeManagement from "../pages/TreeNodeManagement";
 
 // 路由配置接口
 export interface AppRoute {
   path: string;
   element: React.ReactNode;
   children?: AppRoute[];
+  index?: boolean;
   meta?: {
     title: string;
     icon?: React.ReactNode;
@@ -39,7 +43,8 @@ export const routes: AppRoute[] = [
   },
   {
     path: "/",
-    element: <div>Dashboard Layout</div>, // 这里会被 Layout 组件替换
+    element: <Layout />,
+
     meta: {
       title: "仪表板",
       requiresAuth: true,
@@ -48,7 +53,12 @@ export const routes: AppRoute[] = [
     children: [
       {
         path: "/",
-        element: <HomePage />,
+        index: true,
+        element: (
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        ),
         meta: {
           title: "首页",
           icon: <UserOutlined />,
@@ -59,7 +69,11 @@ export const routes: AppRoute[] = [
       },
       {
         path: "/users",
-        element: <UserManagementPage />,
+        element: (
+          <ProtectedRoute requireAdmin>
+            <UserManagementPage />
+          </ProtectedRoute>
+        ),
         meta: {
           title: "用户管理",
           icon: <TeamOutlined />,
@@ -78,6 +92,17 @@ export const routes: AppRoute[] = [
           requiresAuth: true,
           showInMenu: true,
           order: 3,
+        },
+      },
+      {
+        path: "/tree-node-management",
+        element: <TreeNodeManagement />,
+        meta: {
+          title: "树节点管理",
+          icon: <TeamOutlined />,
+          showInMenu: true,
+          requiresAuth: true,
+          order: 4,
         },
       },
     ],

@@ -5,6 +5,7 @@ import { connectDB } from "./config/database";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/users";
 import studentRoutes from "./routes/students";
+import treeNodeRoutes from "./routes/treeNodes";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/students", studentRoutes);
+app.use("/api/tree-nodes", treeNodeRoutes);
 
 // 健康检查
 app.get("/health", (req, res) => {

@@ -8,7 +8,7 @@ import {
 import { ConfigProvider } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { AuthProvider } from "./contexts/AuthContext";
-import { routerConfig } from "./routes/routerConfig";
+import { routes } from "./routes/index";
 
 const App: React.FC = () => {
   return (
@@ -20,7 +20,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Navigate to="/login" replace />} />
 
             {/* 动态路由配置 */}
-            {routerConfig.map((route) => (
+            {routes.map((route) => (
               <Route
                 key={route.path}
                 path={route.path}
@@ -28,7 +28,7 @@ const App: React.FC = () => {
                 children={route.children?.map((child) => (
                   <Route
                     key={child.path || "index"}
-                    index={child.index}
+                    index={child?.index}
                     path={child.path}
                     element={child.element}
                   />
