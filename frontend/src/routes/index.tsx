@@ -11,6 +11,7 @@ import LoginForm from "../pages/LoginForm";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Layout from "../components/Layout";
 import TreeNodeManagement from "../pages/TreeNodeManagement";
+import TreeConfig from "../pages/TreeNodeManagement/TreeConfig";
 
 // 路由配置接口
 export interface AppRoute {
@@ -103,6 +104,22 @@ export const routes: AppRoute[] = [
           showInMenu: true,
           requiresAuth: true,
           order: 4,
+        },
+      },
+      {
+        path: "/tree-node-management/config/:id",
+        element: <TreeConfig />,
+        meta: {
+          title: "树节点管理",
+          icon: <TeamOutlined />,
+          requiresAuth: true,
+        },
+      },
+      {
+        path: "/*",
+        element: <div>404</div>,
+        meta: {
+          title: "404",
         },
       },
     ],
