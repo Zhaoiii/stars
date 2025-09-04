@@ -1,3 +1,4 @@
+import { message } from "antd";
 import axios from "axios";
 
 const API_BASE_URL = "/api";
@@ -32,9 +33,9 @@ api.interceptors.response.use(
       localStorage.removeItem("user");
       window.location.href = "/login";
     }
+    message.error(error.response?.data?.message || "请求失败");
     return Promise.reject(error);
   }
 );
 
 export default api;
-

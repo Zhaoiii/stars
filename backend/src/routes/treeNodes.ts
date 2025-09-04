@@ -1,37 +1,39 @@
 import express from "express";
-import { TreeNodeController } from "../controllers/treeNodeController";
-import { auth } from "../middleware/auth";
+import {
+  createTreeNode,
+  getTreeRoots,
+  getTreeStructure,
+  getTreeNodeById,
+  getChildren,
+  updateTreeNode,
+  deleteTreeNode,
+  reorderNodes,
+} from "../controllers/treeNodeController";
 
 const router = express.Router();
 
-// 所有路由都需要认证
-router.use(auth);
+// 创建树形节点
+router.post("/", createTreeNode);
 
 // 获取所有根节点
-router.get("/roots", TreeNodeController.getRootNodes);
+router.get("/roots", getTreeRoots);
 
-// 获取完整的树形结构
-router.get("/tree", TreeNodeController.getTreeStructure);
+// 获取完整树结构
+router.get("/structure", getTreeStructure);
 
-// 根据ID获取节点及其子树
-router.get("/:id", TreeNodeController.getNodeWithChildren);
+// 获取子节点
+router.get("/children/:parentId", getChildren);
 
-// 获取可选择的前级节点
-router.get(
-  "/:id/available-pre-level",
-  TreeNodeController.getAvailablePreLevelNodes
-);
+// 根据ID获取树形节点
+router.get("/:id", getTreeNodeById);
 
-// 创建节点
-router.post("/", TreeNodeController.createNode);
+// 更新树形节点
+router.put("/:id", updateTreeNode);
 
-// 更新节点
-router.put("/:id", TreeNodeController.updateNode);
+// 删除树形节点
+router.delete("/:id", deleteTreeNode);
 
-// 删除节点
-router.delete("/:id", TreeNodeController.deleteNode);
-
-// 同级节点重新排序
-router.post("/reorder", TreeNodeController.reorderSiblings);
+// 重新排序同级节点
+router.post("/reorder", reorderNodes);
 
 export default router;
