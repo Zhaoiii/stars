@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
 import { IUserInput, ILoginInput } from "../types/user";
+import { auth } from "../middleware/auth";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -80,5 +81,51 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res
       .status(500)
       .json({ message: "登录失败", error: (error as Error).message });
+  }
+};
+
+export const getProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = (req as any).user._id;
+    const user = await User.findById(userId).select("-password");
+
+    if (!user) {
+      res.status(404).json({ message: "用户不存在" });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        _id: user._id,
+        username: user.username,
+        phone: user.phone,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "获取用户信息失败", error: (error as Error).message });
+  }
+};
+
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // 在实际应用中，这里可以将token加入黑名单
+    // 目前只是返回成功消息
+    res.json({
+      success: true,
+      message: "登出成功",
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "登出失败", error: (error as Error).message });
   }
 };

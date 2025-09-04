@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import { User } from "../models/User";
 import { UserRole } from "../types/user";
@@ -28,20 +27,26 @@ const createUser = async (userData: UserData): Promise<void> => {
     // 检查用户是否已存在
     const existingUser = await User.findOne({ phone: userData.phone });
     if (existingUser) {
-      console.log(
-        `⚠️  用户 ${userData.username} (${userData.phone}) 已存在，跳过创建`
-      );
-      return;
+      const shouldReset =
+        (process.env.RESET_DEFAULT_USERS || "").toLowerCase() === "true";
+      if (shouldReset) {
+        existingUser.password = userData.password; // 交由模型 pre-save 进行哈希
+        await existingUser.save();
+        console.log(
+          `♻️ 已重置用户 ${userData.username} (${userData.phone}) 的密码`
+        );
+        return;
+      } else {
+        console.log(
+          `⚠️  用户 ${userData.username} (${userData.phone}) 已存在，跳过创建`
+        );
+        return;
+      }
     }
-
-    // 加密密码
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(userData.password, salt);
 
     // 创建用户
     const user = new User({
       ...userData,
-      password: hashedPassword,
     });
 
     await user.save();
