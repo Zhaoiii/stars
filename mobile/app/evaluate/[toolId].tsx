@@ -104,6 +104,8 @@ export default function EvaluateScreen() {
             const ms: Milestone[] = leafNodes.map((n) => ({
               id: n._id,
               title: n.name,
+              totalCount: (n as any).totalCount,
+              count: 0,
             }));
             setMilestones(ms);
           } else {
@@ -175,6 +177,8 @@ export default function EvaluateScreen() {
       const ms: Milestone[] = (leafNodes || []).map((n) => ({
         id: n._id,
         title: n.name,
+        totalCount: (n as any).totalCount,
+        count: 0,
       }));
       setMilestones(ms);
     }
@@ -191,13 +195,15 @@ export default function EvaluateScreen() {
     const ms: Milestone[] = (leafNodes || []).map((n) => ({
       id: n._id,
       title: n.name,
+      totalCount: (n as any).totalCount,
+      count: 0,
     }));
     setMilestones(ms);
   }, [selectedSubDomainId, subDomainItems]);
 
-  const handleChangeScore = (id: string, score: Milestone["score"]) => {
+  const handleChangeCount = (id: string, next: number) => {
     setMilestones((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, score } : m))
+      prev.map((m) => (m.id === id ? { ...m, count: next } : m))
     );
   };
 
@@ -260,7 +266,7 @@ export default function EvaluateScreen() {
               <MilestoneCard
                 key={m.id}
                 m={m}
-                onChangeScore={handleChangeScore}
+                onChangeCount={handleChangeCount}
               />
             ))}
           </ScrollView>

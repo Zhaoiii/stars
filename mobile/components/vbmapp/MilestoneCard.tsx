@@ -1,42 +1,28 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Milestone, Score } from "@/types/vbmapp";
-
-function ScoreOption({
-  selected,
-  color,
-  border,
-  label,
-  onPress,
-}: {
-  selected: boolean;
-  color: string;
-  border: string;
-  label: Score;
-  onPress: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[
-        styles.scoreBtn,
-        { borderColor: border, backgroundColor: selected ? color : "#fff" },
-      ]}
-    >
-      <Text style={[styles.scoreText, { color: selected ? "#fff" : color }]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
+import { Milestone } from "@/types/vbmapp";
 
 export default function MilestoneCard({
   m,
-  onChangeScore,
+  onChangeCount,
 }: {
   m: Milestone;
-  onChangeScore: (id: string, score: Score) => void;
+  onChangeCount: (id: string, next: number) => void;
 }) {
+  const current = Math.max(0, Math.min(m.count || 0, m.totalCount || 0));
+  const total = Math.max(0, m.totalCount || 0);
+  const progress = total > 0 ? (current / total) * 100 : 0;
+
+  const adjust = (delta: number) => {
+    const next = Math.max(0, Math.min((m.count || 0) + delta, total));
+    onChangeCount(m.id, next);
+  };
+
+  const setTo = (value: number) => {
+    const next = Math.max(0, Math.min(value, total));
+    onChangeCount(m.id, next);
+  };
+
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -46,45 +32,45 @@ export default function MilestoneCard({
           </View>
           <Text style={styles.cardTitle}>{m.title}</Text>
         </View>
-        <TouchableOpacity style={{ padding: 8 }}>
-          <Ionicons name="ellipsis-vertical" size={18} color="#9ca3af" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.scoreRow}>
-        <ScoreOption
-          selected={m.score === "已掌握"}
-          color="#16A34A"
-          border="#16A34A"
-          label="已掌握"
-          onPress={() => onChangeScore(m.id, "已掌握")}
-        />
-        <ScoreOption
-          selected={m.score === "部分掌握"}
-          color="#D97706"
-          border="#D97706"
-          label="部分掌握"
-          onPress={() => onChangeScore(m.id, "部分掌握")}
-        />
-        <ScoreOption
-          selected={m.score === "未掌握"}
-          color="#DC2626"
-          border="#DC2626"
-          label="未掌握"
-          onPress={() => onChangeScore(m.id, "未掌握")}
-        />
-      </View>
-
-      {m.note ? (
-        <View style={styles.noteBox}>
-          <Text style={styles.noteText}>{m.note}</Text>
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={styles.counterText}>
+            {current}/{total}
+          </Text>
         </View>
-      ) : (
-        <TouchableOpacity style={styles.noteButton}>
-          <Ionicons name="chatbubble-outline" size={16} color="#6b7280" />
-          <Text style={styles.noteButtonText}>添加观察记录</Text>
+      </View>
+
+      <View style={styles.progressBarBg}>
+        <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+      </View>
+
+      <View style={styles.controlsRow}>
+        <TouchableOpacity style={styles.ctrlBtn} onPress={() => adjust(-10)}>
+          <Ionicons name="remove" size={16} color="#374151" />
+          <Text style={styles.ctrlText}>-10</Text>
         </TouchableOpacity>
-      )}
+        <TouchableOpacity style={styles.ctrlBtn} onPress={() => adjust(-1)}>
+          <Ionicons name="remove" size={16} color="#374151" />
+          <Text style={styles.ctrlText}>-1</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.ctrlBtnPrimary}
+          onPress={() => adjust(+1)}
+        >
+          <Ionicons name="add" size={16} color="#fff" />
+          <Text style={[styles.ctrlText, { color: "#fff" }]}>+1</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.ctrlBtn} onPress={() => adjust(+10)}>
+          <Ionicons name="add" size={16} color="#374151" />
+          <Text style={styles.ctrlText}>+10</Text>
+        </TouchableOpacity>
+        <View style={{ flex: 1 }} />
+        <TouchableOpacity style={styles.pillBtn} onPress={() => setTo(0)}>
+          <Text style={styles.pillText}>清零</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.pillBtn} onPress={() => setTo(total)}>
+          <Text style={styles.pillText}>满分</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -125,41 +111,59 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111827",
   },
-  scoreRow: {
-    flexDirection: "row",
-    gap: 8,
+  progressBarBg: {
+    height: 10,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 999,
+    overflow: "hidden",
     marginBottom: 10,
   },
-  scoreBtn: {
-    flex: 1,
-    minHeight: 52,
-    borderRadius: 10,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 8,
+  progressBarFill: {
+    height: 10,
+    backgroundColor: "#10B981",
   },
-  scoreText: {
+  controlsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  ctrlBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f3f4f6",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  ctrlBtnPrimary: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2563EB",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  ctrlText: {
+    marginLeft: 4,
+    color: "#374151",
     fontSize: 13,
     fontWeight: "700",
   },
-  noteButton: {
-    flexDirection: "row",
-    alignItems: "center",
+  pillBtn: {
+    backgroundColor: "#eef2ff",
+    borderRadius: 999,
+    paddingHorizontal: 12,
     paddingVertical: 6,
+    marginLeft: 8,
   },
-  noteButtonText: {
-    marginLeft: 6,
-    color: "#6b7280",
-    fontSize: 13,
+  pillText: {
+    color: "#4f46e5",
+    fontSize: 12,
+    fontWeight: "700",
   },
-  noteBox: {
-    backgroundColor: "#f3f4f6",
-    borderRadius: 10,
-    padding: 10,
-  },
-  noteText: {
+  counterText: {
     color: "#374151",
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: "700",
   },
 });
