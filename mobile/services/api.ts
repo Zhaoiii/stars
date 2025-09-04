@@ -91,6 +91,7 @@ export const treeAPI = {
   getChildren: (parentId: string | null) =>
     api.get(`/tree-nodes/children/${parentId ?? "null"}`),
   getNode: (id: string) => api.get(`/tree-nodes/${id}`),
+  getSubtree: (rootId: string) => api.get(`/tree-nodes/subtree/${rootId}`),
 };
 
 export default api;

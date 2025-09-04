@@ -109,6 +109,53 @@ export const getTreeStructure = async (req: Request, res: Response) => {
   }
 };
 
+// 根据rootId获取完整子树
+export const getSubtreeByRootId = async (req: Request, res: Response) => {
+  try {
+    const { rootId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(rootId)) {
+      return res.status(400).json({ message: "无效的根节点ID" });
+    }
+
+    const rootNode = await TreeNode.findById(rootId);
+    if (!rootNode) {
+      return res.status(404).json({ message: "根节点不存在" });
+    }
+
+    const buildTree = async (nodeId: string): Promise<any> => {
+      const node = await TreeNode.findById(nodeId);
+      if (!node) return null;
+      const children = await TreeNode.find({ parentId: node._id }).sort({
+        index: 1,
+      });
+      const childrenWithSubtrees = [] as any[];
+      for (const child of children) {
+        const subtree = await buildTree(child._id.toString());
+        if (subtree) childrenWithSubtrees.push(subtree);
+      }
+      return {
+        ...node.toObject(),
+        children: childrenWithSubtrees,
+      };
+    };
+
+    const subtree = await buildTree(rootId);
+
+    res.json({
+      success: true,
+      data: subtree,
+    });
+  } catch (error) {
+    console.error("获取子树失败:", error);
+    res.status(500).json({
+      success: false,
+      message: "获取子树失败",
+      error: error instanceof Error ? error.message : "未知错误",
+    });
+  }
+};
+
 // 根据ID获取树形节点
 export const getTreeNodeById = async (req: Request, res: Response) => {
   try {

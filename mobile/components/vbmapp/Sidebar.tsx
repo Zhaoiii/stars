@@ -1,5 +1,6 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { TreeNodeItem } from "@/types/vbmapp";
 
 export function SidebarItem({
   icon,
@@ -48,30 +49,61 @@ export function SidebarItem({
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({
+  items,
+  selectedId,
+  stageItems,
+  selectedStageId,
+  onSelectStage,
+  onSelect,
+  sectionTitle = "评估模块",
+}: {
+  items: TreeNodeItem[];
+  selectedId?: string;
+  stageItems?: TreeNodeItem[];
+  selectedStageId?: string;
+  onSelectStage?: (id: string) => void;
+  onSelect?: (id: string) => void;
+  sectionTitle?: string;
+}) {
   return (
     <View style={styles.sidebar}>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
-        <Text style={styles.sectionLabel}>评估模块</Text>
+        <Text style={styles.sectionLabel}>{sectionTitle}</Text>
         <View style={{ marginBottom: 16 }}>
-          <SidebarItem icon="flag" text="里程碑评估" badge="进行中" active />
-          <SidebarItem icon="warning" text="障碍评估" />
-          <SidebarItem icon="swap-horizontal" text="转衔评估" />
+          {items.map((it) => (
+            <Pressable
+              key={it._id}
+              onPress={() => onSelect && onSelect(it._id)}
+            >
+              <SidebarItem
+                icon={"flag"}
+                text={it.name}
+                rightText={it.totalCount?.toString()}
+                badge={it.totalCount?.toString()}
+                active={selectedId === it._id}
+              />
+            </Pressable>
+          ))}
         </View>
+        <Text style={styles.sectionLabel}>{sectionTitle}</Text>
 
-        <Text style={styles.sectionLabel}>里程碑领域</Text>
-        <SidebarItem
-          icon="chatbubble-ellipses"
-          text="语言行为"
-          rightText="65%"
-          active
-          subtle
-        />
-        <SidebarItem icon="people" text="社会交往" rightText="30%" />
-        <SidebarItem icon="eye" text="视觉感知" rightText="100%" />
-        <SidebarItem icon="copy" text="模仿能力" rightText="40%" />
-        <SidebarItem icon="game-controller" text="游戏技能" rightText="0%" />
-        <SidebarItem icon="book" text="学业预备技能" rightText="0%" />
+        <View>
+          {stageItems?.map((it) => (
+            <Pressable
+              key={it._id}
+              onPress={() => onSelectStage && onSelectStage(it._id)}
+            >
+              <SidebarItem
+                icon={"flag"}
+                text={it.name}
+                rightText={it.totalCount?.toString()}
+                badge={it.totalCount?.toString()}
+                active={selectedStageId === it._id}
+              />
+            </Pressable>
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
@@ -79,7 +111,6 @@ export default function Sidebar() {
 
 const styles = StyleSheet.create({
   sidebar: {
-    width: 200,
     backgroundColor: "#fff",
     borderRightWidth: 1,
     borderRightColor: "#e5e7eb",

@@ -3,6 +3,7 @@ import {
   createTreeNode,
   getTreeRoots,
   getTreeStructure,
+  getSubtreeByRootId,
   getTreeNodeById,
   getChildren,
   updateTreeNode,
@@ -20,6 +21,9 @@ router.get("/roots", getTreeRoots);
 
 // 获取完整树结构
 router.get("/structure", getTreeStructure);
+
+// 获取某根节点的完整子树
+router.get("/subtree/:rootId", getSubtreeByRootId);
 
 // 获取子节点
 router.get("/children/:parentId", getChildren);
