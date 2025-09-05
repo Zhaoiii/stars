@@ -1,9 +1,13 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// 从环境变量获取API基础URL，如果没有则使用默认值
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+
 // 创建axios实例
 const api = axios.create({
-  baseURL: "http://localhost:5001/api",
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

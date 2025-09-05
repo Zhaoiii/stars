@@ -1,8 +1,9 @@
 import { message } from "antd";
 import axios from "axios";
 
-// const API_BASE_URL = "http://47.101.149.246:5001/api";
-const API_BASE_URL = "http://localhost:5001/api";
+// 从环境变量获取API基础URL，如果没有则使用默认值
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,

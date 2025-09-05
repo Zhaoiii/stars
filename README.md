@@ -75,6 +75,8 @@ yarn install
 
 ### 3. 配置环境变量
 
+#### 后端环境变量
+
 复制并配置后端环境变量：
 
 ```bash
@@ -89,6 +91,40 @@ PORT=5001
 MONGODB_URI=mongodb://localhost:27017/ba-system
 JWT_SECRET=your-secret-key-here
 ```
+
+#### 前端环境变量
+
+复制并配置前端环境变量：
+
+```bash
+cd frontend
+cp .env.example .env
+```
+
+编辑 `.env` 文件：
+
+```env
+VITE_API_BASE_URL=http://localhost:5001/api
+VITE_APP_ENV=development
+```
+
+#### 移动端环境变量
+
+复制并配置移动端环境变量：
+
+```bash
+cd mobile
+cp .env.example .env
+```
+
+编辑 `.env` 文件：
+
+```env
+EXPO_PUBLIC_API_BASE_URL=http://localhost:5001/api
+EXPO_PUBLIC_APP_ENV=development
+```
+
+> 📝 **注意**: 详细的环境变量配置说明请参考 [ENV_CONFIG.md](./ENV_CONFIG.md)
 
 ### 4. 启动 MongoDB
 
