@@ -1,7 +1,6 @@
 import React from "react";
 import { Form, Input, Select, DatePicker, Button, Space } from "antd";
 import { Gender } from "../../../types/student";
-import dayjs from "dayjs";
 
 const { Option } = Select;
 

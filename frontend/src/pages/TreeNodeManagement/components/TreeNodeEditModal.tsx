@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Modal, Form, Input, Switch, InputNumber, Button, Space } from "antd";
+import { Modal, Form, Input, Switch, InputNumber, Button } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   createTreeNode,
@@ -33,7 +33,6 @@ const TreeNodeEditModal: React.FC<TProps> = ({
   parentId,
 }) => {
   const [form] = Form.useForm<TFormData>();
-  const isLeaf = Form.useWatch("isLeaf", form);
   const nameInputRef = useRef<any>(null);
 
   useEffect(() => {
@@ -126,9 +125,21 @@ const TreeNodeEditModal: React.FC<TProps> = ({
                   <InputNumber
                     style={{ width: "100%" }}
                     placeholder="请输入总数"
-                    onChange={() => {
-                      // 总数变化时清空分段得分
-                      form.setFieldValue("segmentScores", []);
+                    onChange={(value) => {
+                      const numValue = Number(value);
+                      if (value && numValue > 0) {
+                        // 自动生成三个分段得分：0、中间数、总数
+                        const middleValue = Math.ceil(numValue / 2);
+                        const segmentScores = [
+                          { targetCount: 0, score: 0 },
+                          { targetCount: middleValue, score: 0.5 },
+                          { targetCount: numValue, score: 1 },
+                        ];
+                        form.setFieldValue("segmentScores", segmentScores);
+                      } else {
+                        // 总数为0或空时清空分段得分
+                        form.setFieldValue("segmentScores", []);
+                      }
                     }}
                   />
                 </Form.Item>
