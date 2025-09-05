@@ -71,7 +71,7 @@ export default function StudentsScreen() {
 
   const handleStudentPress = (student: Student) => {
     router.push({
-      pathname: "/tool-select",
+      pathname: "/student-evaluations/[studentId]",
       params: { studentId: student._id },
     });
   };

@@ -1,5 +1,10 @@
 import React from "react";
-import { UserOutlined, TeamOutlined, BookOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  TeamOutlined,
+  BookOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
 import { UserRole } from "../types/user";
 import type { MenuProps } from "antd";
 
@@ -12,6 +17,7 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import Layout from "../components/Layout";
 import TreeNodeManagement from "../pages/TreeNodeManagement";
 import TreeConfig from "../pages/TreeNodeManagement/TreeConfig";
+import EvaluationRecordManagement from "../pages/EvaluationRecordManagement";
 
 // 路由配置接口
 export interface AppRoute {
@@ -113,6 +119,21 @@ export const routes: AppRoute[] = [
           title: "树节点管理",
           icon: <TeamOutlined />,
           requiresAuth: true,
+        },
+      },
+      {
+        path: "/evaluation-records",
+        element: (
+          <ProtectedRoute>
+            <EvaluationRecordManagement />
+          </ProtectedRoute>
+        ),
+        meta: {
+          title: "评估记录管理",
+          icon: <FileTextOutlined />,
+          requiresAuth: true,
+          showInMenu: true,
+          order: 5,
         },
       },
       {

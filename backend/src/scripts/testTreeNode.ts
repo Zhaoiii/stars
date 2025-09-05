@@ -1,5 +1,5 @@
 import { connectDB } from "../config/database";
-import { TreeNode } from "../models/TreeNode";
+import TreeNode from "../models/TreeNode";
 
 async function testTreeNodeOperations() {
   try {
@@ -91,7 +91,7 @@ async function testTreeNodeOperations() {
     const roots = await TreeNode.find({ isRoot: true }).sort({ index: 1 });
     console.log(
       "所有根节点:",
-      roots.map((r) => r.name)
+      roots.map((r: any) => r.name)
     );
 
     // 查询某个节点的所有子节点
@@ -100,14 +100,14 @@ async function testTreeNodeOperations() {
     });
     console.log(
       "根节点1的子节点:",
-      children.map((c) => c.name)
+      children.map((c: any) => c.name)
     );
 
     // 查询所有叶子节点
     const leaves = await TreeNode.find({ isLeaf: true });
     console.log(
       "所有叶子节点:",
-      leaves.map((l) => l.name)
+      leaves.map((l: any) => l.name)
     );
 
     // 测试前级关系

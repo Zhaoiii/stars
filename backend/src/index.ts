@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth";
 import userRoutes from "./routes/users";
 import studentRoutes from "./routes/students";
 import treeNodeRoutes from "./routes/treeNodes";
+import evaluationRecordRoutes from "./routes/evaluationRecords";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/tree-nodes", treeNodeRoutes);
+app.use("/api/evaluation-records", evaluationRecordRoutes);
 
 // 健康检查
 app.get("/health", (req, res) => {

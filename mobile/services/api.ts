@@ -94,4 +94,50 @@ export const treeAPI = {
   getSubtree: (rootId: string) => api.get(`/tree-nodes/subtree/${rootId}`),
 };
 
+// 评估记录相关API
+export const evaluationRecordAPI = {
+  // 创建评估记录
+  createEvaluationRecord: (studentId: string, toolId: string) =>
+    api.post("/evaluation-records", { studentId, toolId }),
+
+  // 获取评估记录列表
+  getEvaluationRecords: (params?: {
+    studentId?: string;
+    toolId?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) => api.get("/evaluation-records", { params }),
+
+  // 根据ID获取评估记录
+  getEvaluationRecord: (id: string) => api.get(`/evaluation-records/${id}`),
+
+  // 更新评估记录
+  updateEvaluationRecord: (id: string, data: any) =>
+    api.put(`/evaluation-records/${id}`, data),
+
+  // 更新单个节点得分
+  updateNodeScore: (recordId: string, nodeId: string, data: any) =>
+    api.patch(`/evaluation-records/${recordId}/nodes/${nodeId}`, data),
+
+  // 完成评估
+  completeEvaluation: (id: string) =>
+    api.patch(`/evaluation-records/${id}/complete`),
+
+  // 删除评估记录
+  deleteEvaluationRecord: (id: string) =>
+    api.delete(`/evaluation-records/${id}`),
+
+  // 根据学生ID获取评估记录
+  getEvaluationRecordsByStudent: (studentId: string) =>
+    api.get(`/evaluation-records/student/${studentId}`),
+
+  // 根据工具ID获取评估记录
+  getEvaluationRecordsByTool: (toolId: string) =>
+    api.get(`/evaluation-records/tool/${toolId}`),
+
+  // 获取学生信息（用于显示学生姓名）
+  getStudentInfo: (studentId: string) => api.get(`/students/${studentId}`),
+};
+
 export default api;

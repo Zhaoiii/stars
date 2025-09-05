@@ -1,13 +1,21 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Milestone } from "@/types/vbmapp";
 
 export default function MilestoneCard({
   m,
   onChangeCount,
+  isUpdating = false,
 }: {
   m: Milestone;
   onChangeCount: (id: string, next: number) => void;
+  isUpdating?: boolean;
 }) {
   const current = Math.max(0, Math.min(m.count || 0, m.totalCount || 0));
   const total = Math.max(0, m.totalCount || 0);
@@ -33,9 +41,18 @@ export default function MilestoneCard({
           <Text style={styles.cardTitle}>{m.title}</Text>
         </View>
         <View style={{ alignItems: "flex-end" }}>
-          <Text style={styles.counterText}>
-            {current}/{total}
-          </Text>
+          <View style={styles.counterContainer}>
+            <Text style={styles.counterText}>
+              {current}/{total}
+            </Text>
+            {isUpdating && (
+              <ActivityIndicator
+                size="small"
+                color="#2563EB"
+                style={styles.updatingIndicator}
+              />
+            )}
+          </View>
         </View>
       </View>
 
@@ -161,9 +178,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
   },
+  counterContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   counterText: {
     color: "#374151",
     fontSize: 12,
     fontWeight: "700",
+  },
+  updatingIndicator: {
+    marginLeft: 4,
   },
 });

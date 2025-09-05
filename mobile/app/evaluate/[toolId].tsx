@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Stack, useLocalSearchParams, useNavigation } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { treeAPI } from "@/services/api";
+import { treeAPI, evaluationRecordAPI } from "@/services/api";
 import Toast from "react-native-toast-message";
 import Sidebar from "@/components/vbmapp/Sidebar";
 import Chip from "@/components/vbmapp/Chip";
@@ -18,9 +18,10 @@ import MilestoneCard from "@/components/vbmapp/MilestoneCard";
 import { Milestone, TreeNodeItem } from "@/types/vbmapp";
 
 export default function EvaluateScreen() {
-  const { toolId, studentId } = useLocalSearchParams<{
+  const { toolId, studentId, evaluationRecordId } = useLocalSearchParams<{
     toolId: string;
     studentId: string;
+    evaluationRecordId?: string;
   }>();
   const [loading, setLoading] = useState(true);
   const [fullTree, setFullTree] = useState<TreeNodeItem>(); // 完整树结构（全部根）
@@ -38,6 +39,9 @@ export default function EvaluateScreen() {
   >();
 
   const [milestones, setMilestones] = useState<Milestone[]>([]); // 领域下所有叶子：渲染卡片
+  const [evaluationRecord, setEvaluationRecord] = useState<any>(null); // 评估记录数据
+  const [updatingNodes, setUpdatingNodes] = useState<Set<string>>(new Set()); // 正在更新的节点ID
+  const updateTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map()); // 防抖定时器
 
   const findNodeById = (
     nodes: TreeNodeItem[],
@@ -63,6 +67,41 @@ export default function EvaluateScreen() {
     };
     walk(nodes);
     return result;
+  };
+
+  // 加载评估记录数据
+  const loadEvaluationRecord = async () => {
+    if (!evaluationRecordId) return;
+
+    try {
+      const response = await evaluationRecordAPI.getEvaluationRecord(
+        evaluationRecordId
+      );
+      if (response.data.success) {
+        setEvaluationRecord(response.data.data);
+      }
+    } catch (error) {
+      console.error("加载评估记录失败:", error);
+      Toast.show({
+        type: "error",
+        text1: "加载评估记录失败",
+      });
+    }
+  };
+
+  // 根据评估记录初始化里程碑的完成数
+  const initializeMilestoneCounts = (milestones: Milestone[]) => {
+    if (!evaluationRecord?.evaluationScores) return milestones;
+
+    return milestones.map((milestone) => {
+      const score = evaluationRecord.evaluationScores.find(
+        (score: any) => score.nodeId === milestone.id
+      );
+      return {
+        ...milestone,
+        count: score?.completedCount || 0,
+      };
+    });
   };
 
   const loadHierarchy = async (rootId: string) => {
@@ -107,7 +146,7 @@ export default function EvaluateScreen() {
               totalCount: (n as any).totalCount,
               count: 0,
             }));
-            setMilestones(ms);
+            setMilestones(initializeMilestoneCounts(ms));
           } else {
             setMilestones([]);
           }
@@ -132,6 +171,11 @@ export default function EvaluateScreen() {
       loadHierarchy(toolId);
     }
   }, [toolId]);
+
+  // 加载评估记录
+  useEffect(() => {
+    loadEvaluationRecord();
+  }, [evaluationRecordId]);
 
   const onSelectModule = (id: string) => {
     setSelectedModuleId(id);
@@ -180,7 +224,7 @@ export default function EvaluateScreen() {
         totalCount: (n as any).totalCount,
         count: 0,
       }));
-      setMilestones(ms);
+      setMilestones(initializeMilestoneCounts(ms));
     }
   }, [selectedStageId, stageItems]);
 
@@ -198,14 +242,82 @@ export default function EvaluateScreen() {
       totalCount: (n as any).totalCount,
       count: 0,
     }));
-    setMilestones(ms);
+    setMilestones(initializeMilestoneCounts(ms));
   }, [selectedSubDomainId, subDomainItems]);
 
+  // 防抖更新完成数
+  const debouncedUpdateCount = useCallback(
+    (nodeId: string, completedCount: number) => {
+      // 清除之前的定时器
+      const existingTimeout = updateTimeouts.current.get(nodeId);
+      if (existingTimeout) {
+        clearTimeout(existingTimeout);
+      }
+
+      // 设置新的定时器
+      const timeout = setTimeout(async () => {
+        if (!evaluationRecordId) return;
+
+        try {
+          setUpdatingNodes((prev) => new Set(prev).add(nodeId));
+
+          await evaluationRecordAPI.updateNodeScore(
+            evaluationRecordId,
+            nodeId,
+            {
+              completedCount,
+            }
+          );
+
+          // 更新本地评估记录数据
+          setEvaluationRecord((prev: any) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              evaluationScores: prev.evaluationScores.map((score: any) =>
+                score.nodeId === nodeId ? { ...score, completedCount } : score
+              ),
+            };
+          });
+
+          // 静默更新，不显示成功提示
+        } catch (error) {
+          console.error("更新完成数失败:", error);
+          Toast.show({
+            type: "error",
+            text1: "更新失败，请重试",
+          });
+        } finally {
+          setUpdatingNodes((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(nodeId);
+            return newSet;
+          });
+        }
+      }, 500); // 500ms 防抖延迟
+
+      updateTimeouts.current.set(nodeId, timeout);
+    },
+    [evaluationRecordId]
+  );
+
   const handleChangeCount = (id: string, next: number) => {
+    // 立即更新本地状态
     setMilestones((prev) =>
       prev.map((m) => (m.id === id ? { ...m, count: next } : m))
     );
+
+    // 防抖更新服务器
+    debouncedUpdateCount(id, next);
   };
+
+  // 清理定时器
+  useEffect(() => {
+    return () => {
+      updateTimeouts.current.forEach((timeout) => clearTimeout(timeout));
+      updateTimeouts.current.clear();
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -261,12 +373,17 @@ export default function EvaluateScreen() {
               </ScrollView>
             </View>
           ) : null}
-          <ScrollView style={{ padding: 8 }}>
+          <ScrollView
+            style={{ padding: 8 }}
+            contentContainerStyle={{ paddingBottom: 130 }}
+            showsVerticalScrollIndicator={false}
+          >
             {milestones.map((m) => (
               <MilestoneCard
                 key={m.id}
                 m={m}
                 onChangeCount={handleChangeCount}
+                isUpdating={updatingNodes.has(m.id)}
               />
             ))}
           </ScrollView>
