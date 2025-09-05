@@ -2,7 +2,7 @@ import React from "react";
 import { Descriptions, Card, Progress, Tag, Typography, Divider } from "antd";
 import { EvaluationRecord } from "../../../types/evaluationRecord";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface EvaluationRecordDetailProps {
   record: EvaluationRecord;
