@@ -248,12 +248,6 @@ export const updateTreeNode = async (req: Request, res: Response) => {
       }
     }
 
-    // 如果总数发生变化，清空分段得分
-    let finalSegmentScores = segmentScores;
-    if (isLeaf && node.totalCount !== totalCount) {
-      finalSegmentScores = [];
-    }
-
     const updatedNode = await TreeNode.findByIdAndUpdate(
       id,
       {
@@ -261,7 +255,7 @@ export const updateTreeNode = async (req: Request, res: Response) => {
         description,
         isLeaf,
         totalCount: isLeaf ? totalCount : undefined,
-        segmentScores: isLeaf ? finalSegmentScores : [],
+        segmentScores: isLeaf ? segmentScores : [],
       },
       { new: true, runValidators: true }
     );

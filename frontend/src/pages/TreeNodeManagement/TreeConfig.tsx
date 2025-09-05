@@ -1,30 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  Card,
-  Tree,
-  Button,
-  Space,
-  message,
-  Modal,
-  Form,
-  Input,
-  Switch,
-  InputNumber,
-  Popconfirm,
-  Spin,
-} from "antd";
+import { Card, Tree, Button, Space, message, Popconfirm, Spin } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   getTreeStructure,
   getTreeNodeById,
-  createTreeNode,
-  updateTreeNode,
   deleteTreeNode,
   reorderNodes,
   ITreeNode,
-  ITreeNodeInput,
 } from "./apis";
+import TreeNodeEditModal from "./components/TreeNodeEditModal";
 
 const TreeConfig: React.FC = () => {
   const navigate = useNavigate();
@@ -35,7 +20,6 @@ const TreeConfig: React.FC = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editData, setEditData] = useState<ITreeNode | null>(null);
   const [parentId, setParentId] = useState<string | null>(null);
-  const [form] = Form.useForm();
 
   // 获取指定根节点的树形数据
   const fetchTreeData = async () => {
@@ -255,31 +239,10 @@ const TreeConfig: React.FC = () => {
     }
   };
 
-  // 保存节点
-  const handleSave = async (values: any) => {
-    try {
-      const submitData: ITreeNodeInput = {
-        name: values.name,
-        description: values.description,
-        isLeaf: values.isLeaf,
-        parentId: editData ? editData.parentId : parentId || undefined,
-        totalCount: values.isLeaf ? values.totalCount : undefined,
-        segmentScores: values.isLeaf ? values.segmentScores : [],
-      };
-
-      if (editData) {
-        await updateTreeNode(editData._id, submitData);
-        message.success("更新成功");
-      } else {
-        await createTreeNode(submitData);
-        message.success("创建成功");
-      }
-
-      setEditModalVisible(false);
-      fetchTreeData();
-    } catch (error) {
-      // message.error(error instanceof Error ? error.message : "保存失败");
-    }
+  // 处理弹窗成功回调
+  const handleModalSuccess = () => {
+    setEditModalVisible(false);
+    fetchTreeData();
   };
 
   return (
@@ -317,151 +280,13 @@ const TreeConfig: React.FC = () => {
         </Spin>
       </Card>
 
-      <Modal
-        title={editData ? "编辑节点" : "新增节点"}
+      <TreeNodeEditModal
         open={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
-        onOk={form.submit}
-        afterClose={form.resetFields}
-        width={600}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSave}
-          initialValues={
-            editData
-              ? {
-                  name: editData.name,
-                  description: editData.description,
-                  isLeaf: editData.isLeaf,
-                  totalCount: editData.totalCount,
-                  segmentScores: editData.segmentScores || [],
-                }
-              : {}
-          }
-        >
-          <Form.Item
-            label="名称"
-            name="name"
-            rules={[{ required: true, message: "请输入名称" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="描述" name="description">
-            <Input.TextArea rows={3} />
-          </Form.Item>
-
-          <Form.Item label="是否叶子节点" name="isLeaf" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-
-          <Form.Item dependencies={["isLeaf"]}>
-            {({ getFieldValue }) => {
-              const isLeaf = getFieldValue("isLeaf");
-              return isLeaf ? (
-                <>
-                  <Form.Item
-                    label="总数"
-                    name="totalCount"
-                    rules={[
-                      { required: true, message: "请输入总数" },
-                      { type: "number", min: 0, message: "总数必须大于等于0" },
-                    ]}
-                  >
-                    <InputNumber
-                      style={{ width: "100%" }}
-                      placeholder="请输入总数"
-                    />
-                  </Form.Item>
-
-                  <Form.Item label="分段得分">
-                    <Form.List name="segmentScores">
-                      {(fields, { add, remove }) => (
-                        <>
-                          {fields.map(({ key, name, ...restField }) => (
-                            <div
-                              key={key}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                marginBottom: 8,
-                                padding: 8,
-                                border: "1px solid #d9d9d9",
-                                borderRadius: 4,
-                              }}
-                            >
-                              <Form.Item
-                                {...restField}
-                                name={[name, "targetCount"]}
-                                label="目标数"
-                                rules={[
-                                  { required: true, message: "请输入目标数" },
-                                  {
-                                    type: "number",
-                                    min: 0,
-                                    message: "目标数必须大于等于0",
-                                  },
-                                ]}
-                                style={{ marginRight: 16, marginBottom: 0 }}
-                              >
-                                <InputNumber
-                                  placeholder="目标数"
-                                  style={{ width: 120 }}
-                                />
-                              </Form.Item>
-
-                              <Form.Item
-                                {...restField}
-                                name={[name, "score"]}
-                                label="得分"
-                                rules={[
-                                  { required: true, message: "请输入得分" },
-                                  {
-                                    type: "number",
-                                    min: 0,
-                                    max: 1,
-                                    message: "得分必须在0-1之间",
-                                  },
-                                ]}
-                                style={{ marginRight: 16, marginBottom: 0 }}
-                              >
-                                <InputNumber
-                                  placeholder="得分"
-                                  style={{ width: 120 }}
-                                  step={0.1}
-                                  min={0}
-                                  max={1}
-                                />
-                              </Form.Item>
-
-                              <Button
-                                type="text"
-                                danger
-                                icon={<DeleteOutlined />}
-                                onClick={() => remove(name)}
-                              />
-                            </div>
-                          ))}
-                          <Button
-                            type="dashed"
-                            onClick={() => add()}
-                            block
-                            icon={<PlusOutlined />}
-                          >
-                            添加分段得分
-                          </Button>
-                        </>
-                      )}
-                    </Form.List>
-                  </Form.Item>
-                </>
-              ) : null;
-            }}
-          </Form.Item>
-        </Form>
-      </Modal>
+        onSuccess={handleModalSuccess}
+        editData={editData}
+        parentId={parentId}
+      />
     </div>
   );
 };

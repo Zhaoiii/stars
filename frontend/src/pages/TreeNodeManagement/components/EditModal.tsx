@@ -9,7 +9,7 @@ import {
   Card,
 } from "antd";
 import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   createTreeNode,
   updateTreeNode,
@@ -40,6 +40,7 @@ const EditModal: React.FC<TProps> = ({
 }) => {
   const [form] = Form.useForm<TFormData>();
   const isLeaf = Form.useWatch("isLeaf", form);
+  const nameInputRef = useRef<any>(null);
 
   useEffect(() => {
     if (open && editData) {
@@ -55,6 +56,16 @@ const EditModal: React.FC<TProps> = ({
     }
   }, [open, editData, form]);
 
+  // 弹窗打开时自动聚焦到 name 字段
+  useEffect(() => {
+    if (open && nameInputRef.current) {
+      // 使用 setTimeout 确保 Modal 完全渲染后再聚焦
+      setTimeout(() => {
+        nameInputRef.current?.focus();
+      }, 100);
+    }
+  }, [open]);
+
   const onFinish = async (values: TFormData) => {
     try {
       const submitData: ITreeNodeInput = {
@@ -63,6 +74,7 @@ const EditModal: React.FC<TProps> = ({
         isLeaf: values.isLeaf,
         totalCount: values.isLeaf ? values.totalCount : undefined,
         segmentScores: values.isLeaf ? values.segmentScores : [],
+        isRoot: true,
       };
 
       if (editData) {
@@ -93,7 +105,7 @@ const EditModal: React.FC<TProps> = ({
           name="name"
           rules={[{ required: true, message: "请输入名称" }]}
         >
-          <Input />
+          <Input ref={nameInputRef} />
         </Form.Item>
 
         <Form.Item label="描述" name="description">

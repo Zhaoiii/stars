@@ -93,22 +93,6 @@ const treeNodeSchema = new Schema<ITreeNode>(
     segmentScores: {
       type: [segmentScoreSchema],
       default: [],
-      validate: {
-        validator: function (this: ITreeNode, value: ISegmentScore[]) {
-          // 只有叶子节点才能有分段得分
-          if (!this.isLeaf && value && value.length > 0) {
-            return false;
-          }
-          // 验证分段得分的目标数不超过总数
-          if (this.isLeaf && this.totalCount && value) {
-            return value.every(
-              (segment) => segment.targetCount <= this.totalCount!
-            );
-          }
-          return true;
-        },
-        message: "非叶子节点不能有分段得分，且分段得分的目标数不能超过总数",
-      },
     },
   },
   {
@@ -133,7 +117,92 @@ treeNodeSchema.pre("save", function (next) {
     this.segmentScores = [];
   }
 
+  // 验证分段得分
+  if (this.isLeaf && this.segmentScores && this.segmentScores.length > 0) {
+    // 检查是否有总数
+    if (this.totalCount === undefined) {
+      return next(new Error("叶子节点必须设置总数才能配置分段得分"));
+    }
+
+    // 验证分段得分的目标数不超过总数
+    const invalidSegments = this.segmentScores.filter(
+      (segment) => segment.targetCount > this.totalCount!
+    );
+
+    if (invalidSegments.length > 0) {
+      return next(new Error(`分段得分的目标数不能超过总数 ${this.totalCount}`));
+    }
+
+    // 验证分段得分的分数范围
+    const invalidScores = this.segmentScores.filter(
+      (segment) => segment.score < 0 || segment.score > 1
+    );
+
+    if (invalidScores.length > 0) {
+      return next(new Error("分段得分的分数必须在 0-1 之间"));
+    }
+  }
+
   next();
+});
+
+// 中间件：更新前验证
+treeNodeSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate() as any;
+
+  // 如果更新中包含 isLeaf 字段
+  if (update && typeof update.isLeaf === "boolean") {
+    // 如果设置为非叶子节点，清空总数和分段得分
+    if (!update.isLeaf) {
+      update.totalCount = undefined;
+      update.segmentScores = [];
+    }
+  }
+
+  // 如果更新中包含 segmentScores 字段
+  if (update && update.segmentScores) {
+    try {
+      // 使用 findById 而不是 findOne 来避免查询冲突
+      const doc = await this.model.findById(this.getQuery()._id);
+
+      if (
+        doc &&
+        doc.isLeaf &&
+        update.segmentScores &&
+        update.segmentScores.length > 0
+      ) {
+        // 检查是否有总数
+        const totalCount =
+          update.totalCount !== undefined ? update.totalCount : doc.totalCount;
+        if (totalCount === undefined) {
+          return next(new Error("叶子节点必须设置总数才能配置分段得分"));
+        }
+
+        // 验证分段得分的目标数不超过总数
+        const invalidSegments = update.segmentScores.filter(
+          (segment: ISegmentScore) => segment.targetCount > totalCount
+        );
+
+        if (invalidSegments.length > 0) {
+          return next(new Error(`分段得分的目标数不能超过总数 ${totalCount}`));
+        }
+
+        // 验证分段得分的分数范围
+        const invalidScores = update.segmentScores.filter(
+          (segment: ISegmentScore) => segment.score < 0 || segment.score > 1
+        );
+
+        if (invalidScores.length > 0) {
+          return next(new Error("分段得分的分数必须在 0-1 之间"));
+        }
+      }
+      next();
+    } catch (error) {
+      next(error as Error);
+    }
+  } else {
+    next();
+  }
 });
 
 // 静态方法：获取根节点
