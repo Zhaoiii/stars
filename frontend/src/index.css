@@ -1,3 +1,103 @@
 body {
   margin: 0;
 }
+
+/* TipTap 基础样式（简化） */
+.tiptap {
+  outline: none;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.tiptap p {
+  margin: 8px 0;
+}
+
+.tiptap h2 {
+  margin: 12px 0 8px;
+  font-size: 18px;
+}
+
+/* 表格样式 */
+.tiptap table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* 表格整体对齐（通过 data-align 控制） */
+.tiptap table[data-align="left"] {
+  margin-left: 0;
+  margin-right: auto;
+}
+.tiptap table[data-align="center"] {
+  margin-left: auto;
+  margin-right: auto;
+}
+.tiptap table[data-align="right"] {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.tiptap table td,
+.tiptap table th {
+  border: 1px solid #d9d9d9;
+  padding: 6px 8px;
+  vertical-align: top;
+  position: relative;
+}
+
+/* 支持通过 data-vertical-align 控制单元格垂直对齐 */
+.tiptap td[data-vertical-align="top"],
+.tiptap th[data-vertical-align="top"] {
+  vertical-align: top;
+}
+.tiptap td[data-vertical-align="middle"],
+.tiptap th[data-vertical-align="middle"] {
+  vertical-align: middle;
+}
+.tiptap td[data-vertical-align="bottom"],
+.tiptap th[data-vertical-align="bottom"] {
+  vertical-align: bottom;
+}
+
+.tiptap table th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+/* 选区高亮（多单元格选择合并时更明显） */
+.tiptap .selectedCell:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(24, 144, 255, 0.12);
+  pointer-events: none;
+}
+
+/* 可调整列宽（当开启 resizable） */
+.tiptap .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: rgba(24, 144, 255, 0.35);
+  pointer-events: none;
+}
+
+/* 工具栏样式 */
+.editor-toolbar-card {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+}

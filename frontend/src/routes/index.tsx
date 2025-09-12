@@ -18,6 +18,7 @@ import Layout from "../components/Layout";
 import TreeNodeManagement from "../pages/TreeNodeManagement";
 import TreeConfig from "../pages/TreeNodeManagement/TreeConfig";
 import EvaluationRecordManagement from "../pages/EvaluationRecordManagement";
+import Editor from "../pages/Editor/Editor";
 
 // 路由配置接口
 export interface AppRoute {
@@ -134,6 +135,21 @@ export const routes: AppRoute[] = [
           requiresAuth: true,
           showInMenu: true,
           order: 5,
+        },
+      },
+      {
+        path: "/editor",
+        element: (
+          <ProtectedRoute>
+            <Editor />
+          </ProtectedRoute>
+        ),
+        meta: {
+          title: "富文本编辑器",
+          icon: <FileTextOutlined />,
+          requiresAuth: true,
+          showInMenu: true,
+          order: 6,
         },
       },
       {
