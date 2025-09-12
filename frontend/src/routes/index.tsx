@@ -19,6 +19,7 @@ import TreeNodeManagement from "../pages/TreeNodeManagement";
 import TreeConfig from "../pages/TreeNodeManagement/TreeConfig";
 import EvaluationRecordManagement from "../pages/EvaluationRecordManagement";
 import Editor from "../pages/Editor/Editor";
+import GroupManagementPage from "../pages/GroupManagementPage";
 
 // 路由配置接口
 export interface AppRoute {
@@ -92,6 +93,22 @@ export const routes: AppRoute[] = [
         },
       },
       {
+        path: "/groups",
+        element: (
+          <ProtectedRoute requireAdmin>
+            <GroupManagementPage />
+          </ProtectedRoute>
+        ),
+        meta: {
+          title: "分组管理",
+          icon: <TeamOutlined />,
+          requiresAuth: true,
+          requiredRole: UserRole.ADMIN,
+          showInMenu: true,
+          order: 3,
+        },
+      },
+      {
         path: "/students",
         element: <StudentManagementPage />,
         meta: {
@@ -99,7 +116,7 @@ export const routes: AppRoute[] = [
           icon: <BookOutlined />,
           requiresAuth: true,
           showInMenu: true,
-          order: 3,
+          order: 4,
         },
       },
       {
@@ -110,7 +127,7 @@ export const routes: AppRoute[] = [
           icon: <TeamOutlined />,
           showInMenu: true,
           requiresAuth: true,
-          order: 4,
+          order: 5,
         },
       },
       {
@@ -134,7 +151,7 @@ export const routes: AppRoute[] = [
           icon: <FileTextOutlined />,
           requiresAuth: true,
           showInMenu: true,
-          order: 5,
+          order: 6,
         },
       },
       {
@@ -149,7 +166,7 @@ export const routes: AppRoute[] = [
           icon: <FileTextOutlined />,
           requiresAuth: true,
           showInMenu: true,
-          order: 6,
+          order: 7,
         },
       },
       {

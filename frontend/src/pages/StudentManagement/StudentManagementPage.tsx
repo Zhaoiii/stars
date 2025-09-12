@@ -1,5 +1,14 @@
 import React, { useMemo } from "react";
-import { Table, Button, Space, Modal, Typography, Form } from "antd";
+import {
+  Table,
+  Button,
+  Space,
+  Modal,
+  Typography,
+  Form,
+  Select,
+  message,
+} from "antd";
 import {
   ExclamationCircleOutlined,
   PlusOutlined,
@@ -11,6 +20,8 @@ import StudentDetail from "./components/StudentDetail";
 import StudentSearch from "./components/StudentSearch";
 import { getTableColumns } from "./components/tableColumns";
 import { useStudentManagement } from "./hooks/useStudentManagement";
+import { userAPI } from "../../services/userAPI";
+import { StudentService } from "./services/studentService";
 
 const { confirm } = Modal;
 const { Title } = Typography;
@@ -38,6 +49,17 @@ const StudentManagementPage: React.FC = () => {
   const [searchModalVisible, setSearchModalVisible] = React.useState(false);
   const [viewStudent, setViewStudent] = React.useState<Student | null>(null);
 
+  // 指派老师弹窗
+  const [assignModalVisible, setAssignModalVisible] = React.useState(false);
+  const [assigningStudent, setAssigningStudent] =
+    React.useState<Student | null>(null);
+  const [allUsers, setAllUsers] = React.useState<
+    { label: string; value: string }[]
+  >([]);
+  const [selectedTeacherIds, setSelectedTeacherIds] = React.useState<string[]>(
+    []
+  );
+
   const openCreateModal = (): void => {
     createForm.resetFields();
     setCreateModalVisible(true);
@@ -63,6 +85,88 @@ const StudentManagementPage: React.FC = () => {
     setSearchModalVisible(true);
   };
 
+  const openAssignModal = async (student: Student): Promise<void> => {
+    setAssigningStudent(student);
+    setAssignModalVisible(true);
+
+    try {
+      // 获取学生详情，包含所在组和已指派的老师信息
+      const studentDetail = await StudentService.getStudentById(student._id);
+
+      // 如果学生有 assignedTeachers 信息，预填已指派的老师
+      const preselected = Array.isArray(studentDetail.assignedTeachers)
+        ? (studentDetail.assignedTeachers as any[]).map((x: any) =>
+            typeof x === "string" ? x : x._id
+          )
+        : [];
+      setSelectedTeacherIds(preselected);
+
+      // 只显示学生所在组的老师
+      const availableTeachers: { label: string; value: string }[] = [];
+      if (Array.isArray(studentDetail.groups)) {
+        studentDetail.groups.forEach((group: any) => {
+          if (Array.isArray(group.teachers)) {
+            group.teachers.forEach((teacher: any) => {
+              const teacherId =
+                typeof teacher === "string" ? teacher : teacher._id;
+              const teacherName =
+                typeof teacher === "string" ? "" : teacher.username;
+              const teacherPhone =
+                typeof teacher === "string" ? "" : teacher.phone;
+
+              // 避免重复添加
+              if (!availableTeachers.find((t) => t.value === teacherId)) {
+                availableTeachers.push({
+                  label: `${teacherName}(${teacherPhone})`,
+                  value: teacherId,
+                });
+              }
+            });
+          }
+        });
+      }
+
+      setAllUsers(availableTeachers);
+
+      if (availableTeachers.length === 0) {
+        message.warning("该学生未加入任何组，无法指派老师");
+      }
+    } catch (error) {
+      console.error("获取学生详情失败:", error);
+      message.error("获取学生信息失败");
+    }
+  };
+
+  const handleAssignSave = async (): Promise<void> => {
+    if (!assigningStudent) return;
+    try {
+      const existing = Array.isArray(assigningStudent.assignedTeachers)
+        ? (assigningStudent.assignedTeachers as any[]).map((x: any) =>
+            typeof x === "string" ? x : x._id
+          )
+        : [];
+      const toAssign = selectedTeacherIds.filter(
+        (id) => !existing.includes(id)
+      );
+      const toUnassign = existing.filter(
+        (id) => !selectedTeacherIds.includes(id)
+      );
+
+      if (toAssign.length) {
+        await StudentService.assignTeachers(assigningStudent._id, toAssign);
+      }
+      if (toUnassign.length) {
+        await StudentService.unassignTeachers(assigningStudent._id, toUnassign);
+      }
+
+      message.success("保存成功");
+      setAssignModalVisible(false);
+      setAssigningStudent(null);
+    } catch (e) {
+      // 全局拦截器提示
+    }
+  };
+
   const showDeleteConfirm = (studentId: string, name: string): void => {
     confirm({
       title: "确认删除",
@@ -83,6 +187,7 @@ const StudentManagementPage: React.FC = () => {
         onView: openViewModal,
         onEdit: openEditModal,
         onDelete: (s) => showDeleteConfirm(s._id, s.name),
+        onAssign: openAssignModal,
       }),
     []
   );
@@ -209,6 +314,24 @@ const StudentManagementPage: React.FC = () => {
           }}
           onReset={resetSearch}
           onCancel={() => setSearchModalVisible(false)}
+        />
+      </Modal>
+
+      {/* 指派老师模态框 */}
+      <Modal
+        title="指派老师"
+        open={assignModalVisible}
+        onCancel={() => setAssignModalVisible(false)}
+        onOk={handleAssignSave}
+        destroyOnClose
+      >
+        <Select
+          mode="multiple"
+          style={{ width: "100%" }}
+          placeholder="选择老师"
+          value={selectedTeacherIds}
+          onChange={setSelectedTeacherIds}
+          options={allUsers}
         />
       </Modal>
     </div>

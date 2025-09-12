@@ -5,6 +5,24 @@ export interface Student {
   birthDate: string;
   createdAt: string;
   updatedAt: string;
+  assignedTeachers?:
+    | Array<{
+        _id: string;
+        username: string;
+        phone: string;
+        role?: string;
+      }>
+    | string[];
+  groups?: Array<{
+    _id: string;
+    name: string;
+    teachers: Array<{
+      _id: string;
+      username: string;
+      phone: string;
+      role?: string;
+    }>;
+  }>;
 }
 
 export enum Gender {

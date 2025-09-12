@@ -54,4 +54,27 @@ export class StudentService {
     const response = await api.get(`/students/search?${params.toString()}`);
     return response.data.students;
   }
+
+  // 给学生指派老师
+  static async assignTeachers(
+    studentId: string,
+    teacherIds: string[]
+  ): Promise<Student> {
+    const response = await api.post(`/students/${studentId}/assign-teachers`, {
+      teacherIds,
+    });
+    return response.data.student;
+  }
+
+  // 取消指派学生的老师
+  static async unassignTeachers(
+    studentId: string,
+    teacherIds: string[]
+  ): Promise<Student> {
+    const response = await api.post(
+      `/students/${studentId}/unassign-teachers`,
+      { teacherIds }
+    );
+    return response.data.student;
+  }
 }

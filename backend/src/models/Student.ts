@@ -21,6 +21,8 @@ const studentSchema = new Schema<IStudentDocument>(
       type: Date,
       required: true,
     },
+    assignedTeachers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    groups: [{ type: Schema.Types.ObjectId, ref: "Group", default: [] }],
   },
   {
     timestamps: true,
@@ -31,6 +33,8 @@ const studentSchema = new Schema<IStudentDocument>(
 studentSchema.index({ name: 1 });
 studentSchema.index({ gender: 1 });
 studentSchema.index({ birthDate: 1 });
+studentSchema.index({ assignedTeachers: 1 });
+studentSchema.index({ groups: 1 });
 
 export const Student = mongoose.model<IStudentDocument>(
   "Student",

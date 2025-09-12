@@ -1,5 +1,10 @@
 import { Button, Space, Tag, Popconfirm } from "antd";
-import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 import { Student, Gender } from "../../../types/student";
 
@@ -7,12 +12,14 @@ interface TableColumnsProps {
   onView: (student: Student) => void;
   onEdit: (student: Student) => void;
   onDelete: (student: Student) => void;
+  onAssign?: (student: Student) => void;
 }
 
 export const getTableColumns = ({
   onView,
   onEdit,
   onDelete,
+  onAssign,
 }: TableColumnsProps) => {
   const getGenderText = (gender: Gender): string => {
     return gender === Gender.MALE ? "男" : "女";
@@ -78,6 +85,15 @@ export const getTableColumns = ({
           >
             编辑
           </Button>
+          {onAssign && (
+            <Button
+              type="link"
+              icon={<TeamOutlined />}
+              onClick={() => onAssign(record)}
+            >
+              指派老师
+            </Button>
+          )}
           <Popconfirm
             title="确定要删除这个学生吗？"
             onConfirm={() => onDelete(record)}

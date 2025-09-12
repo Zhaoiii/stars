@@ -5,6 +5,8 @@ export interface IStudent {
   birthDate: Date;
   createdAt: Date;
   updatedAt: Date;
+  groups?: string[];
+  assignedTeachers?: string[];
 }
 
 export enum Gender {
@@ -25,4 +27,6 @@ export interface IStudentResponse {
   birthDate: Date;
   createdAt: Date;
   updatedAt: Date;
+  groups?: string[];
+  assignedTeachers?: string[];
 }

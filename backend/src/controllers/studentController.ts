@@ -1,13 +1,56 @@
 import { Request, Response } from "express";
 import { Student } from "../models/Student";
 import { Gender } from "../types/student";
+import { UserRole } from "../types/user";
+import { Group } from "../models/Group";
+import { User } from "../models/User";
+
+interface AuthRequest extends Request {
+  user?: {
+    _id: string;
+    role: UserRole;
+  };
+}
 
 export const getAllStudents = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ): Promise<void> => {
   try {
-    const students = await Student.find({}).sort({ createdAt: -1 });
+    const user = req.user!;
+
+    let filter: any = {};
+
+    if (user.role === UserRole.ADMIN) {
+      // 管理员可见全部
+    } else {
+      // 先查找用户作为 Group 管理者管理的组
+      const managedGroups = await Group.find({ managers: user._id }).select(
+        "students"
+      );
+      const managedStudentIds = new Set<string>();
+      managedGroups.forEach((g) => {
+        (g.students as any[]).forEach((sid: any) =>
+          managedStudentIds.add(sid.toString())
+        );
+      });
+
+      // 老师被分配的学生
+      const teacherAssignedFilter = { assignedTeachers: user._id };
+
+      if (managedStudentIds.size > 0) {
+        filter = {
+          $or: [
+            { _id: { $in: Array.from(managedStudentIds) } },
+            teacherAssignedFilter,
+          ],
+        };
+      } else {
+        filter = teacherAssignedFilter;
+      }
+    }
+
+    const students = await Student.find(filter).sort({ createdAt: -1 });
     res.json({ students });
   } catch (error) {
     res.status(500).json({
@@ -18,12 +61,49 @@ export const getAllStudents = async (
 };
 
 export const getStudentById = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ): Promise<void> => {
   try {
     const { studentId } = req.params;
-    const student = await Student.findById(studentId);
+
+    // 可见性校验（与列表一致）
+    const user = req.user!;
+    let canView = false;
+
+    if (user.role === UserRole.ADMIN) {
+      canView = true;
+    } else {
+      const inManagedGroup = await Group.exists({
+        managers: user._id,
+        students: studentId,
+      });
+      if (inManagedGroup) {
+        canView = true;
+      } else {
+        const assigned = await Student.exists({
+          _id: studentId,
+          assignedTeachers: user._id,
+        });
+        canView = !!assigned;
+      }
+    }
+
+    if (!canView) {
+      res.status(403).json({ message: "没有权限查看该学生" });
+      return;
+    }
+
+    const student = await Student.findById(studentId)
+      .populate("assignedTeachers", "username phone role")
+      .populate({
+        path: "groups",
+        select: "name teachers",
+        populate: {
+          path: "teachers",
+          select: "username phone role",
+        },
+      });
 
     if (!student) {
       res.status(404).json({ message: "学生不存在" });
@@ -166,7 +246,7 @@ export const deleteStudent = async (
 };
 
 export const searchStudents = async (
-  req: Request,
+  req: AuthRequest,
   res: Response
 ): Promise<void> => {
   try {
@@ -209,6 +289,31 @@ export const searchStudents = async (
       }
     }
 
+    // 权限过滤
+    const user = req.user!;
+    if (user.role !== UserRole.ADMIN) {
+      const managedGroups = await Group.find({ managers: user._id }).select(
+        "students"
+      );
+      const managedStudentIds = new Set<string>();
+      managedGroups.forEach((g) => {
+        (g.students as any[]).forEach((sid: any) =>
+          managedStudentIds.add(sid.toString())
+        );
+      });
+
+      const teacherAssignedFilter = { assignedTeachers: user._id };
+
+      if (managedStudentIds.size > 0) {
+        filter.$or = [
+          { _id: { $in: Array.from(managedStudentIds) } },
+          teacherAssignedFilter,
+        ];
+      } else {
+        Object.assign(filter, teacherAssignedFilter);
+      }
+    }
+
     const students = await Student.find(filter).sort({ createdAt: -1 });
     res.json({ students });
   } catch (error) {
@@ -216,5 +321,92 @@ export const searchStudents = async (
       message: "搜索学生失败",
       error: (error as Error).message,
     });
+  }
+};
+
+export const assignTeachersToStudent = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { studentId } = req.params;
+    const { teacherIds = [] } = req.body as { teacherIds: string[] };
+
+    // 基本存在性校验
+    const student = await Student.findById(studentId);
+    if (!student) {
+      res.status(404).json({ message: "学生不存在" });
+      return;
+    }
+    const usersCount = await User.countDocuments({ _id: { $in: teacherIds } });
+    if (usersCount !== teacherIds.length) {
+      res.status(400).json({ message: "部分教师不存在" });
+      return;
+    }
+
+    // 权限：管理员 或 该学生所在任一组的组管理者
+    const user = req.user!;
+    if (user.role !== UserRole.ADMIN) {
+      const isGroupManager = await Group.exists({
+        managers: user._id,
+        students: studentId,
+      });
+      if (!isGroupManager) {
+        res.status(403).json({ message: "没有权限分配该学生的教师" });
+        return;
+      }
+    }
+
+    await Student.updateOne(
+      { _id: studentId },
+      { $addToSet: { assignedTeachers: { $each: teacherIds } } }
+    );
+
+    const updated = await Student.findById(studentId);
+    res.json({ message: "分配成功", student: updated });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "分配教师失败", error: (error as Error).message });
+  }
+};
+
+export const unassignTeachersFromStudent = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { studentId } = req.params;
+    const { teacherIds = [] } = req.body as { teacherIds: string[] };
+
+    const student = await Student.findById(studentId);
+    if (!student) {
+      res.status(404).json({ message: "学生不存在" });
+      return;
+    }
+
+    const user = req.user!;
+    if (user.role !== UserRole.ADMIN) {
+      const isGroupManager = await Group.exists({
+        managers: user._id,
+        students: studentId,
+      });
+      if (!isGroupManager) {
+        res.status(403).json({ message: "没有权限取消分配该学生的教师" });
+        return;
+      }
+    }
+
+    await Student.updateOne(
+      { _id: studentId },
+      { $pull: { assignedTeachers: { $in: teacherIds } } }
+    );
+
+    const updated = await Student.findById(studentId);
+    res.json({ message: "取消分配成功", student: updated });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "取消分配失败", error: (error as Error).message });
   }
 };

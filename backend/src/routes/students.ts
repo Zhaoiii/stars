@@ -8,6 +8,8 @@ import {
   updateStudent,
   deleteStudent,
   searchStudents,
+  assignTeachersToStudent,
+  unassignTeachersFromStudent,
 } from "../controllers/studentController";
 
 const router = Router();
@@ -40,6 +42,24 @@ router.get("/", auth, getAllStudents);
 
 // 搜索学生（需要登录）
 router.get("/search", auth, searchValidation, searchStudents);
+
+// 分配/取消分配学生的老师（管理员或组管理者）
+router.post(
+  "/:studentId/assign-teachers",
+  auth,
+  body("teacherIds")
+    .isArray({ min: 1 })
+    .withMessage("teacherIds 必须为非空数组"),
+  assignTeachersToStudent
+);
+router.post(
+  "/:studentId/unassign-teachers",
+  auth,
+  body("teacherIds")
+    .isArray({ min: 1 })
+    .withMessage("teacherIds 必须为非空数组"),
+  unassignTeachersFromStudent
+);
 
 // 获取学生详情（需要登录）
 router.get("/:studentId", auth, getStudentById);
