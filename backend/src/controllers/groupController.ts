@@ -311,3 +311,30 @@ export const removeStudentsFromGroup = async (
       .json({ message: "移除学生失败", error: (error as Error).message });
   }
 };
+
+// 获取指定分组的老师列表
+export const getGroupTeachers = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { groupId } = req.params;
+    
+    const group = await Group.findById(groupId)
+      .populate("teachers", "username phone role email");
+
+    if (!group) {
+      res.status(404).json({ message: "分组不存在" });
+      return;
+    }
+
+    res.json({ 
+      message: "获取老师列表成功", 
+      teachers: group.teachers 
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "获取老师列表失败", error: (error as Error).message });
+  }
+};

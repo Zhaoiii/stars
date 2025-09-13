@@ -19,7 +19,7 @@ import TreeNodeManagement from "../pages/TreeNodeManagement";
 import TreeConfig from "../pages/TreeNodeManagement/TreeConfig";
 import EvaluationRecordManagement from "../pages/EvaluationRecordManagement";
 import Editor from "../pages/Editor/Editor";
-import GroupManagementPage from "../pages/GroupManagementPage";
+import { GroupManagementPage } from "../pages/GroupManagement";
 
 // 路由配置接口
 export interface AppRoute {

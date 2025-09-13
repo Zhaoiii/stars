@@ -10,12 +10,14 @@ import {
   setGroupManagers,
   addStudentsToGroup,
   removeStudentsFromGroup,
+  getGroupTeachers,
 } from "../controllers/groupController";
 
 const router = Router();
 
 router.get("/", auth, adminAuth, getAllGroups);
 router.get("/:groupId", auth, adminAuth, getGroupById);
+router.get("/:groupId/teachers", auth, adminAuth, getGroupTeachers);
 router.post("/", auth, adminAuth, createGroup);
 router.put("/:groupId", auth, adminAuth, updateGroup);
 router.delete("/:groupId", auth, adminAuth, deleteGroup);

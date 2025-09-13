@@ -10,6 +10,10 @@ export const groupAPI = {
     api.put<ApiResponse<Group>>(`/groups/${id}`, payload),
   remove: (id: string) => api.delete<ApiResponse<null>>(`/groups/${id}`),
 
+  // 获取指定分组的老师列表
+  getTeachers: (groupId: string) => 
+    api.get<ApiResponse<any[]>>(`/groups/${groupId}/teachers`),
+  
   addTeachers: (groupId: string, teacherIds: string[]) =>
     api.post<ApiResponse<Group>>(`/groups/${groupId}/teachers`, { teacherIds }),
   setManagers: (groupId: string, managerIds: string[]) =>
