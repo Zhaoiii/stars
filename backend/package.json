@@ -8,6 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "init-db": "ts-node src/scripts/initDb.ts",
+    "init-db-ts": "ts-node src/scripts/initDb.ts",
+    "init-assistance-types": "ts-node src/scripts/initAssistanceTypes.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix"
   },

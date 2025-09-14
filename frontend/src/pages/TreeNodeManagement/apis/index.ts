@@ -6,12 +6,25 @@ export interface ISegmentScore {
   score: number;
 }
 
+export interface IAssistanceType {
+  _id: string;
+  name: string;
+  code: string;
+  description?: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ITreeNode {
   _id: string;
   name: string;
   description?: string;
   isRoot: boolean;
-  isLeaf: boolean;
+  isLongTermGoal: boolean;
+  isShortTermGoal: boolean;
+  assistanceTypeId?: string;
   parentId?: string;
   index: number;
   totalCount?: number;
@@ -25,7 +38,9 @@ export interface ITreeNodeInput {
   name: string;
   description?: string;
   isRoot?: boolean;
-  isLeaf?: boolean;
+  isLongTermGoal?: boolean;
+  isShortTermGoal?: boolean;
+  assistanceTypeId?: string;
   parentId?: string;
   totalCount?: number;
   segmentScores?: ISegmentScore[];
@@ -70,4 +85,9 @@ export const deleteTreeNode = (id: string) => {
 
 export const reorderNodes = (data: IReorderRequest) => {
   return api.post("/tree-nodes/reorder", data);
+};
+
+// 辅助类型 API
+export const getAssistanceTypes = () => {
+  return api.get("/assistance-types");
 };

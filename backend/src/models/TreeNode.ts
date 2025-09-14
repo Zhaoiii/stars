@@ -12,11 +12,13 @@ export interface ITreeNode extends Document {
   name: string;
   description?: string;
   isRoot: boolean;
-  isLeaf: boolean;
+  isLongTermGoal: boolean;
+  isShortTermGoal: boolean;
+  assistanceTypeId?: string; // 辅助类型ID
   parentId?: string;
   index: number; // 同级排序索引
-  totalCount?: number; // 总数（仅叶子节点）
-  segmentScores?: ISegmentScore[]; // 分段得分（仅叶子节点）
+  totalCount?: number; // 总数（仅目标节点）
+  segmentScores?: ISegmentScore[]; // 分段得分（仅目标节点）
   createdAt: Date;
   updatedAt: Date;
 }
@@ -66,9 +68,18 @@ const treeNodeSchema = new Schema<ITreeNode>(
       type: Boolean,
       default: false,
     },
-    isLeaf: {
+    isLongTermGoal: {
       type: Boolean,
       default: false,
+    },
+    isShortTermGoal: {
+      type: Boolean,
+      default: false,
+    },
+    assistanceTypeId: {
+      type: Schema.Types.ObjectId,
+      ref: "AssistanceType",
+      default: null,
     },
     parentId: {
       type: Schema.Types.ObjectId,
@@ -84,10 +95,11 @@ const treeNodeSchema = new Schema<ITreeNode>(
       min: 0,
       validate: {
         validator: function (this: ITreeNode, value: number) {
-          // 只有叶子节点才需要总数
-          return !this.isLeaf || value !== undefined;
+          // 只有目标节点才需要总数
+          const isGoal = this.isLongTermGoal || this.isShortTermGoal;
+          return !isGoal || value !== undefined;
         },
-        message: "叶子节点必须设置总数",
+        message: "目标节点必须设置总数",
       },
     },
     segmentScores: {
@@ -106,22 +118,24 @@ treeNodeSchema.index({ isRoot: 1 });
 
 // 中间件：保存前验证
 treeNodeSchema.pre("save", function (next) {
-  // 如果是叶子节点，必须有总数
-  if (this.isLeaf && this.totalCount === undefined) {
-    return next(new Error("叶子节点必须设置总数"));
+  const isGoal = this.isLongTermGoal || this.isShortTermGoal;
+  
+  // 如果是目标节点，必须有总数
+  if (isGoal && this.totalCount === undefined) {
+    return next(new Error("目标节点必须设置总数"));
   }
 
-  // 如果不是叶子节点，清空总数和分段得分
-  if (!this.isLeaf) {
+  // 如果不是目标节点，清空总数和分段得分
+  if (!isGoal) {
     this.totalCount = undefined;
     this.segmentScores = [];
   }
 
   // 验证分段得分
-  if (this.isLeaf && this.segmentScores && this.segmentScores.length > 0) {
+  if (isGoal && this.segmentScores && this.segmentScores.length > 0) {
     // 检查是否有总数
     if (this.totalCount === undefined) {
-      return next(new Error("叶子节点必须设置总数才能配置分段得分"));
+      return next(new Error("目标节点必须设置总数才能配置分段得分"));
     }
 
     // 验证分段得分的目标数不超过总数
@@ -150,13 +164,15 @@ treeNodeSchema.pre("save", function (next) {
 treeNodeSchema.pre("findOneAndUpdate", async function (next) {
   const update = this.getUpdate() as any;
 
-  // 如果更新中包含 isLeaf 字段
-  if (update && typeof update.isLeaf === "boolean") {
-    // 如果设置为非叶子节点，清空总数和分段得分
-    if (!update.isLeaf) {
-      update.totalCount = undefined;
-      update.segmentScores = [];
-    }
+  // 如果更新中包含目标字段
+  const isLongTermGoal = update.isLongTermGoal !== undefined ? update.isLongTermGoal : false;
+  const isShortTermGoal = update.isShortTermGoal !== undefined ? update.isShortTermGoal : false;
+  const isGoal = isLongTermGoal || isShortTermGoal;
+
+  // 如果设置为非目标节点，清空总数和分段得分
+  if (!isGoal) {
+    update.totalCount = undefined;
+    update.segmentScores = [];
   }
 
   // 如果更新中包含 segmentScores 字段
@@ -167,7 +183,7 @@ treeNodeSchema.pre("findOneAndUpdate", async function (next) {
 
       if (
         doc &&
-        doc.isLeaf &&
+        isGoal &&
         update.segmentScores &&
         update.segmentScores.length > 0
       ) {
@@ -175,7 +191,7 @@ treeNodeSchema.pre("findOneAndUpdate", async function (next) {
         const totalCount =
           update.totalCount !== undefined ? update.totalCount : doc.totalCount;
         if (totalCount === undefined) {
-          return next(new Error("叶子节点必须设置总数才能配置分段得分"));
+          return next(new Error("目标节点必须设置总数才能配置分段得分"));
         }
 
         // 验证分段得分的目标数不超过总数

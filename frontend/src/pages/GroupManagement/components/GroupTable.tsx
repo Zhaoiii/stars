@@ -14,22 +14,22 @@ const GroupTable: React.FC<GroupTableProps> = ({
         { title: "描述", dataIndex: "description" },
         {
             title: "教师数",
-            render: (_, r: Group) =>
+            render: (_: any, r: Group) =>
                 Array.isArray(r.teachers) ? (r.teachers as any[]).length : 0,
         },
         {
             title: "管理者数",
-            render: (_, r: Group) =>
+            render: (_: any, r: Group) =>
                 Array.isArray(r.managers) ? (r.managers as any[]).length : 0,
         },
         {
             title: "学生数",
-            render: (_, r: Group) =>
+            render: (_: any, r: Group) =>
                 Array.isArray(r.students) ? (r.students as any[]).length : 0,
         },
         {
             title: "操作",
-            render: (_, r: Group) => (
+            render: (_: any, r: Group) => (
                 <Space>
                     <Button onClick={() => onSelectMembers("teachers", r)}>
                         设置教师

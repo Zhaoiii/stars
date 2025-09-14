@@ -1,12 +1,14 @@
-import React, { useEffect, useRef } from "react";
-import { Modal, Form, Input, Switch, InputNumber, Button } from "antd";
+import React, { useEffect, useRef, useState } from "react";
+import { Modal, Form, Input, Switch, InputNumber, Button, Select } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   createTreeNode,
   updateTreeNode,
+  getAssistanceTypes,
   ITreeNodeInput,
   ITreeNode,
   ISegmentScore,
+  IAssistanceType,
 } from "../apis";
 
 type TProps = {
@@ -20,7 +22,9 @@ type TProps = {
 type TFormData = {
   name: string;
   description: string;
-  isLeaf: boolean;
+  isLongTermGoal: boolean;
+  isShortTermGoal: boolean;
+  assistanceTypeId?: string;
   totalCount?: number;
   segmentScores?: ISegmentScore[];
 };
@@ -34,13 +38,16 @@ const TreeNodeEditModal: React.FC<TProps> = ({
 }) => {
   const [form] = Form.useForm<TFormData>();
   const nameInputRef = useRef<any>(null);
+  const [assistanceTypes, setAssistanceTypes] = useState<IAssistanceType[]>([]);
 
   useEffect(() => {
     if (open && editData) {
       form.setFieldsValue({
         name: editData.name,
         description: editData.description,
-        isLeaf: editData.isLeaf,
+        isLongTermGoal: editData.isLongTermGoal,
+        isShortTermGoal: editData.isShortTermGoal,
+        assistanceTypeId: editData.assistanceTypeId,
         totalCount: editData.totalCount,
         segmentScores: editData.segmentScores || [],
       });
@@ -48,6 +55,21 @@ const TreeNodeEditModal: React.FC<TProps> = ({
       form.resetFields();
     }
   }, [open, editData, form]);
+
+  // 加载辅助类型
+  useEffect(() => {
+    if (open) {
+      const loadAssistanceTypes = async () => {
+        try {
+          const { data } = await getAssistanceTypes();
+          setAssistanceTypes(data.data || []);
+        } catch (error) {
+          console.error("加载辅助类型失败:", error);
+        }
+      };
+      loadAssistanceTypes();
+    }
+  }, [open]);
 
   // 弹窗打开时自动聚焦到 name 字段
   useEffect(() => {
@@ -61,13 +83,16 @@ const TreeNodeEditModal: React.FC<TProps> = ({
 
   const onFinish = async (values: TFormData) => {
     try {
+      const isGoal = values.isLongTermGoal || values.isShortTermGoal;
       const submitData: ITreeNodeInput = {
         name: values.name,
         description: values.description,
-        isLeaf: values.isLeaf,
+        isLongTermGoal: values.isLongTermGoal,
+        isShortTermGoal: values.isShortTermGoal,
+        assistanceTypeId: isGoal ? values.assistanceTypeId : undefined,
         parentId: editData ? editData.parentId : parentId || undefined,
-        totalCount: values.isLeaf ? values.totalCount : undefined,
-        segmentScores: values.isLeaf ? values.segmentScores : [],
+        totalCount: isGoal ? values.totalCount : undefined,
+        segmentScores: isGoal ? values.segmentScores : [],
       };
 
       if (editData) {
@@ -105,15 +130,47 @@ const TreeNodeEditModal: React.FC<TProps> = ({
           <Input.TextArea rows={3} />
         </Form.Item>
 
-        <Form.Item label="是否叶子节点" name="isLeaf" valuePropName="checked">
-          <Switch />
+        <Form.Item label="长期目标" name="isLongTermGoal" valuePropName="checked">
+          <Switch 
+            onChange={(checked) => {
+              if (checked) {
+                form.setFieldValue("isShortTermGoal", false);
+              }
+            }}
+          />
         </Form.Item>
 
-        <Form.Item dependencies={["isLeaf"]}>
+        <Form.Item label="短期目标" name="isShortTermGoal" valuePropName="checked">
+          <Switch 
+            onChange={(checked) => {
+              if (checked) {
+                form.setFieldValue("isLongTermGoal", false);
+              }
+            }}
+          />
+        </Form.Item>
+
+        <Form.Item dependencies={["isLongTermGoal", "isShortTermGoal"]}>
           {({ getFieldValue }) => {
-            const isLeaf = getFieldValue("isLeaf");
-            return isLeaf ? (
+            const isLongTermGoal = getFieldValue("isLongTermGoal");
+            const isShortTermGoal = getFieldValue("isShortTermGoal");
+            const isGoal = isLongTermGoal || isShortTermGoal;
+            return isGoal ? (
               <>
+                <Form.Item
+                  label="辅助类别"
+                  name="assistanceTypeId"
+                  rules={[{ required: true, message: "请选择辅助类别" }]}
+                >
+                  <Select
+                    placeholder="请选择辅助类别"
+                    options={assistanceTypes.map(type => ({
+                      label: type.name,
+                      value: type._id,
+                    }))}
+                  />
+                </Form.Item>
+
                 <Form.Item
                   label="总数"
                   name="totalCount"

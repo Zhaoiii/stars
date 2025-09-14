@@ -44,7 +44,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { phone, password }: ILoginInput = req.body;
 
-    console.log(phone, password);
+    console.log(phone, password, );
 
     const user = await User.findOne({ phone });
     console.log(user);

@@ -20,10 +20,6 @@ export const createTreeNode = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "名称是必填字段" });
     }
 
-    // 如果是叶子节点，验证总数
-    if (isLeaf && (totalCount === undefined || totalCount < 0)) {
-      return res.status(400).json({ message: "叶子节点必须设置有效的总数" });
-    }
 
     // 验证分段得分
     if (isLeaf && segmentScores) {

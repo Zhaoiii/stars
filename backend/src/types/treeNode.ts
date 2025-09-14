@@ -3,7 +3,9 @@ export interface ITreeNode {
   name: string;
   description?: string;
   isRoot: boolean;
-  isLeaf: boolean;
+  isLongTermGoal: boolean;
+  isShortTermGoal: boolean;
+  assistanceTypeId?: string; // 辅助类型ID
   preLevelNode?: string; // 前一个等级节点的ID
   nextLevelNode?: string; // 下一个等级节点的ID
   index: number; // 同级排序索引
@@ -16,7 +18,9 @@ export interface ITreeNodeInput {
   name: string;
   description?: string;
   isRoot?: boolean;
-  isLeaf?: boolean;
+  isLongTermGoal?: boolean;
+  isShortTermGoal?: boolean;
+  assistanceTypeId?: string;
   preLevelNode?: string;
   parentId?: string;
   index?: number;
@@ -25,7 +29,9 @@ export interface ITreeNodeInput {
 export interface ITreeNodeUpdate {
   name?: string;
   description?: string;
-  isLeaf?: boolean;
+  isLongTermGoal?: boolean;
+  isShortTermGoal?: boolean;
+  assistanceTypeId?: string;
   preLevelNode?: string;
   index?: number;
 }
@@ -35,7 +41,9 @@ export interface ITreeNodeResponse {
   name: string;
   description?: string;
   isRoot: boolean;
-  isLeaf: boolean;
+  isLongTermGoal: boolean;
+  isShortTermGoal: boolean;
+  assistanceTypeId?: string;
   preLevelNode?: string;
   nextLevelNode?: string;
   index: number;
