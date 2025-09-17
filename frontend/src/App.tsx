@@ -1,44 +1,30 @@
-import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import React, { Suspense } from "react";
+import { BrowserRouter as Router, useRoutes, Navigate } from "react-router-dom";
 import { ConfigProvider } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { AuthProvider } from "./contexts/AuthContext";
-import { routerConfig } from "./routes/routerConfig";
+import { buildRouteObjects } from "./routes";
+
+const AppRoutes: React.FC = () => {
+  const routeObjects = buildRouteObjects();
+  const element = useRoutes([
+    // 根路径重定向
+    { path: "/", element: <Navigate to="/users" replace /> },
+    ...routeObjects,
+    // 兜底重定向
+    { path: "*", element: <Navigate to="/login" replace /> },
+  ]);
+  return element;
+};
 
 const App: React.FC = () => {
   return (
     <ConfigProvider locale={zhCN}>
       <AuthProvider>
         <Router>
-          <Routes>
-            {/* 根路径重定向到登录 */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-
-            {/* 动态路由配置 */}
-            {routerConfig.map((route) => (
-              <Route
-                key={route.path}
-                path={route.path}
-                element={route.element}
-                children={route.children?.map((child) => (
-                  <Route
-                    key={child.path || "index"}
-                    index={child.index}
-                    path={child.path}
-                    element={child.element}
-                  />
-                ))}
-              />
-            ))}
-
-            {/* 其他路径重定向到登录 */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
+          <Suspense fallback={null}>
+            <AppRoutes />
+          </Suspense>
         </Router>
       </AuthProvider>
     </ConfigProvider>
