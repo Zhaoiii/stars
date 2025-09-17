@@ -1,204 +1,176 @@
 import { Request, Response } from "express";
-import { User } from "../models/User";
-import { UserRole } from "../types/user";
+import {
+  UserService,
+  CreateUserData,
+  UpdateUserData,
+  LoginData,
+} from "../services/UserService";
+import { ResponseUtil } from "../utils/response";
+import {
+  CreateUserInput,
+  UpdateUserInput,
+  LoginInput,
+  SearchUsersInput,
+} from "../schemas/userSchemas";
 
-interface AuthRequest extends Request {
-  user?: {
-    _id: string;
-    username: string;
-    phone: string;
-    role: UserRole;
+export class UserController {
+  private userService: UserService;
+
+  constructor() {
+    this.userService = new UserService();
+  }
+
+  // 创建用户
+  createUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userData: CreateUserInput = req.body;
+      const user = await this.userService.createUser(
+        userData as CreateUserData
+      );
+
+      ResponseUtil.success(res, user, "用户创建成功", 201);
+    } catch (error) {
+      ResponseUtil.error(
+        res,
+        error instanceof Error ? error.message : "创建用户失败",
+        400
+      );
+    }
   };
-}
 
-export const getProfile = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
-  try {
-    if (!req.user) {
-      res.status(401).json({ message: "未授权" });
-      return;
+  // 获取所有用户
+  getAllUsers = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const users = await this.userService.getAllUsers();
+      ResponseUtil.success(res, users, "获取用户列表成功");
+    } catch (error) {
+      ResponseUtil.error(res, "获取用户列表失败");
     }
+  };
 
-    const user = await User.findById(req.user._id).select("-password");
-    if (!user) {
-      res.status(404).json({ message: "用户不存在" });
-      return;
+  // 搜索用户
+  searchUsers = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const searchParams: SearchUsersInput =
+        req.query as unknown as SearchUsersInput;
+
+      const result = await this.userService.searchUsers({
+        keyword: searchParams.keyword,
+        role: searchParams.role,
+        status: searchParams.status,
+        page: searchParams.page,
+        limit: searchParams.pageSize,
+      });
+
+      ResponseUtil.successPaginated(
+        res,
+        result.users,
+        result.page,
+        result.limit,
+        result.total,
+        "搜索用户成功"
+      );
+    } catch (error) {
+      ResponseUtil.error(res, "搜索用户失败");
     }
+  };
 
-    res.json({ user });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "获取用户信息失败", error: (error as Error).message });
-  }
-};
+  // 根据ID获取用户
+  getUserById = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await this.userService.getUserById(id);
 
-export const getAllUsers = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const users = await User.find({})
-      .select("-password")
-      .sort({ createdAt: -1 });
-    res.json({ users });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "获取用户列表失败", error: (error as Error).message });
-  }
-};
-
-export const createUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { username, phone, password, role } = req.body;
-
-    // 检查手机号是否已存在
-    const existingUser = await User.findOne({ phone });
-    if (existingUser) {
-      res.status(400).json({ message: "手机号已存在" });
-      return;
-    }
-
-    // 创建新用户
-    const user = new User({
-      username,
-      phone,
-      password,
-      role: role || UserRole.USER,
-    });
-
-    await user.save();
-
-    // 返回用户信息（不包含密码）
-    const userResponse = await User.findById(user._id).select("-password");
-    res.status(201).json({
-      message: "用户创建成功",
-      user: userResponse,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "创建用户失败", error: (error as Error).message });
-  }
-};
-
-export const getUserById = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { userId } = req.params;
-    const user = await User.findById(userId).select("-password");
-
-    if (!user) {
-      res.status(404).json({ message: "用户不存在" });
-      return;
-    }
-
-    res.json({ user });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "获取用户信息失败", error: (error as Error).message });
-  }
-};
-
-export const updateUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { userId } = req.params;
-    const { username, phone, role } = req.body;
-
-    // 检查手机号是否已被其他用户使用
-    if (phone) {
-      const existingUser = await User.findOne({ phone, _id: { $ne: userId } });
-      if (existingUser) {
-        res.status(400).json({ message: "手机号已被其他用户使用" });
+      if (!user) {
+        ResponseUtil.notFound(res, "用户不存在");
         return;
       }
+
+      ResponseUtil.success(res, user, "获取用户信息成功");
+    } catch (error) {
+      ResponseUtil.error(res, "获取用户信息失败");
     }
+  };
 
-    // 更新用户信息
-    const updateData: any = {};
-    if (username) updateData.username = username;
-    if (phone) updateData.phone = phone;
-    if (role && Object.values(UserRole).includes(role)) updateData.role = role;
+  // 更新用户
+  updateUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      const userData: UpdateUserInput = req.body;
 
-    const user = await User.findByIdAndUpdate(userId, updateData, {
-      new: true,
-      runValidators: true,
-    }).select("-password");
+      const user = await this.userService.updateUser(
+        id,
+        userData as UpdateUserData
+      );
 
-    if (!user) {
-      res.status(404).json({ message: "用户不存在" });
-      return;
+      if (!user) {
+        ResponseUtil.notFound(res, "用户不存在");
+        return;
+      }
+
+      ResponseUtil.success(res, user, "用户更新成功");
+    } catch (error) {
+      ResponseUtil.error(
+        res,
+        error instanceof Error ? error.message : "更新用户失败",
+        400
+      );
     }
+  };
 
-    res.json({ message: "用户信息更新成功", user });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "更新用户信息失败", error: (error as Error).message });
-  }
-};
+  // 删除用户
+  deleteUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await this.userService.deleteUser(id);
 
-export const updateUserRole = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { userId } = req.params;
-    const { role } = req.body;
+      if (!success) {
+        ResponseUtil.notFound(res, "用户不存在");
+        return;
+      }
 
-    if (!Object.values(UserRole).includes(role)) {
-      res.status(400).json({ message: "无效的用户角色" });
-      return;
+      ResponseUtil.success(res, null, "用户删除成功");
+    } catch (error) {
+      ResponseUtil.error(res, "删除用户失败");
     }
+  };
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { role },
-      { new: true, runValidators: true }
-    ).select("-password");
+  // 用户登录
+  login = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const loginData: LoginInput = req.body;
+      const result = await this.userService.login(loginData as LoginData);
 
-    if (!user) {
-      res.status(404).json({ message: "用户不存在" });
-      return;
+      ResponseUtil.success(
+        res,
+        {
+          user: result.user,
+          token: result.token,
+        },
+        "登录成功"
+      );
+    } catch (error) {
+      ResponseUtil.unauthorized(
+        res,
+        error instanceof Error ? error.message : "登录失败"
+      );
     }
+  };
 
-    res.json({ message: "用户角色更新成功", user });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "更新用户角色失败", error: (error as Error).message });
-  }
-};
+  // 获取当前用户信息
+  getCurrentUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = (req as any).user?.userId;
+      const user = await this.userService.getUserById(userId);
 
-export const deleteUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { userId } = req.params;
+      if (!user) {
+        ResponseUtil.notFound(res, "用户不存在");
+        return;
+      }
 
-    const user = await User.findByIdAndDelete(userId);
-    if (!user) {
-      res.status(404).json({ message: "用户不存在" });
-      return;
+      ResponseUtil.success(res, user, "获取用户信息成功");
+    } catch (error) {
+      ResponseUtil.error(res, "获取用户信息失败");
     }
-
-    res.json({ message: "用户删除成功" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "删除用户失败", error: (error as Error).message });
-  }
-};
+  };
+}

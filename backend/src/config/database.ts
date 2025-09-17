@@ -1,24 +1,35 @@
-import mongoose from "mongoose";
+import { DataSource } from "typeorm";
+import { User } from "../entities/User";
+import { Team } from "../entities/Team";
+import { Student } from "../entities/Student";
+import dotenv from "dotenv";
 
-export const connectDB = async (): Promise<void> => {
+dotenv.config();
+
+export const AppDataSource = new DataSource({
+  type: "postgres",
+  host: process.env.DB_HOST || "localhost",
+  port: parseInt(process.env.DB_PORT || "5432"),
+  username: process.env.DB_USERNAME || "postgres",
+  password: process.env.DB_PASSWORD || "password",
+  database: process.env.DB_DATABASE || "ba_system",
+  synchronize: process.env.NODE_ENV === "development",
+  logging: process.env.NODE_ENV === "development",
+  entities: [User, Team, Student],
+  migrations: ["src/migrations/*.ts"],
+  subscribers: ["src/subscriber/*.ts"],
+});
+
+export const initializeDatabase = async () => {
   try {
-    const mongoURI =
-      process.env.MONGODB_URI || "mongodb://localhost:27017/ba-system";
+    await AppDataSource.initialize();
 
-    await mongoose.connect(mongoURI);
-
-    console.log("MongoDB连接成功");
+    console.log(
+      `${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_DATABASE}`,
+      "数据库连接成功"
+    );
   } catch (error) {
-    console.error("MongoDB连接失败:", (error as Error).message);
-    process.exit(1);
-  }
-};
-
-export const disconnectDB = async (): Promise<void> => {
-  try {
-    await mongoose.disconnect();
-    console.log("MongoDB连接已断开");
-  } catch (error) {
-    console.error("断开MongoDB连接失败:", (error as Error).message);
+    console.error("数据库连接失败:", error);
+    throw error;
   }
 };

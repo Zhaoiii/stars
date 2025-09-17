@@ -1,9 +1,7 @@
-import { message } from "antd";
+import { notification } from "antd";
 import axios from "axios";
 
-// 从环境变量获取API基础URL，如果没有则使用默认值
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api";
+const API_BASE_URL = "/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -35,9 +33,34 @@ api.interceptors.response.use(
       localStorage.removeItem("user");
       window.location.href = "/login";
     }
-    message.error(error.response?.data?.message || "请求失败");
+    notification.error({
+      description: error.response?.data?.message || "something went wrong",
+      message: "",
+    });
     return Promise.reject(error);
   }
 );
+
+// 不分页的响应格式
+export type ApiResponse<T = any> = {
+  success: boolean;
+  message: string;
+  data?: T;
+};
+
+// 分页的响应格式
+export type PaginatedResponse<T = any> = {
+  success: boolean;
+  message: string;
+  data: T[];
+  page: number;
+  pageSize: number;
+  total: number;
+};
+
+export type PaginatedRequest<T> = {
+  page: number;
+  pageSize: number;
+} & T;
 
 export default api;

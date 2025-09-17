@@ -1,339 +1,211 @@
-import React, { useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   Button,
   Space,
-  Modal,
-  Typography,
   Form,
-  Select,
   message,
+  Popconfirm,
+  Tag,
+  Tooltip,
+  Input,
+  Flex,
 } from "antd";
 import {
-  ExclamationCircleOutlined,
   PlusOutlined,
-  SearchOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
-import { Student } from "../../types/student";
-import StudentForm from "./components/StudentForm";
-import StudentDetail from "./components/StudentDetail";
-import StudentSearch from "./components/StudentSearch";
-import { getTableColumns } from "./components/tableColumns";
-import { useStudentManagement } from "./hooks/useStudentManagement";
-import { userAPI } from "../../services/userAPI";
-import { StudentService } from "./services/studentService";
-
-const { confirm } = Modal;
-const { Title } = Typography;
+import { Student, Gender, Team } from "@/types/student";
+import { User } from "@/types/user";
+import { StudentService } from "@/services/studentService";
+import useTable from "@/hooks/useTable";
+import StudentFormModal from "./components/StudentFormModal";
 
 const StudentManagementPage: React.FC = () => {
-  const {
-    students,
-    loading,
-    editingStudent,
-    createStudent,
-    updateStudent,
-    deleteStudent,
-    searchStudents,
-    resetSearch,
-    setEditingStudentData,
-  } = useStudentManagement();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [form] = Form.useForm();
 
-  const [createForm] = Form.useForm();
-  const [editForm] = Form.useForm();
-  const [searchForm] = Form.useForm();
-
-  const [createModalVisible, setCreateModalVisible] = React.useState(false);
-  const [editModalVisible, setEditModalVisible] = React.useState(false);
-  const [viewModalVisible, setViewModalVisible] = React.useState(false);
-  const [searchModalVisible, setSearchModalVisible] = React.useState(false);
-  const [viewStudent, setViewStudent] = React.useState<Student | null>(null);
-
-  // 指派老师弹窗
-  const [assignModalVisible, setAssignModalVisible] = React.useState(false);
-  const [assigningStudent, setAssigningStudent] =
-    React.useState<Student | null>(null);
-  const [allUsers, setAllUsers] = React.useState<
-    { label: string; value: string }[]
-  >([]);
-  const [selectedTeacherIds, setSelectedTeacherIds] = React.useState<string[]>(
-    []
-  );
-
-  const openCreateModal = (): void => {
-    createForm.resetFields();
-    setCreateModalVisible(true);
-  };
-
-  const openEditModal = (student: Student): void => {
-    setEditingStudentData(student);
-    editForm.setFieldsValue({
-      name: student.name,
-      gender: student.gender,
-      birthDate: undefined,
+  const [tableProps, { reset }] = useTable((params) => {
+    const values = form.getFieldsValue();
+    return StudentService.searchStudents({
+      ...params,
+      ...values,
     });
-    setEditModalVisible(true);
+  });
+
+  useEffect(() => {
+    reset();
+  }, []);
+
+  // 打开创建/编辑模态框
+  const handleOpenModal = (student?: Student) => {
+    setEditingStudent(student || null);
+    setModalVisible(true);
   };
 
-  const openViewModal = (student: Student): void => {
-    setViewStudent(student);
-    setViewModalVisible(true);
+  // 关闭模态框
+  const handleCloseModal = (needRefresh?: boolean) => {
+    if (needRefresh) reset();
+    setModalVisible(false);
+    setEditingStudent(null);
   };
 
-  const openSearchModal = (): void => {
-    searchForm.resetFields();
-    setSearchModalVisible(true);
-  };
-
-  const openAssignModal = async (student: Student): Promise<void> => {
-    setAssigningStudent(student);
-    setAssignModalVisible(true);
-
+  // 删除学生
+  const handleDelete = async (id: number) => {
     try {
-      // 获取学生详情，包含所在组和已指派的老师信息
-      const studentDetail = await StudentService.getStudentById(student._id);
-
-      // 如果学生有 assignedTeachers 信息，预填已指派的老师
-      const preselected = Array.isArray(studentDetail.assignedTeachers)
-        ? (studentDetail.assignedTeachers as any[]).map((x: any) =>
-            typeof x === "string" ? x : x._id
-          )
-        : [];
-      setSelectedTeacherIds(preselected);
-
-      // 只显示学生所在组的老师
-      const availableTeachers: { label: string; value: string }[] = [];
-      if (Array.isArray(studentDetail.groups)) {
-        studentDetail.groups.forEach((group: any) => {
-          if (Array.isArray(group.teachers)) {
-            group.teachers.forEach((teacher: any) => {
-              const teacherId =
-                typeof teacher === "string" ? teacher : teacher._id;
-              const teacherName =
-                typeof teacher === "string" ? "" : teacher.username;
-              const teacherPhone =
-                typeof teacher === "string" ? "" : teacher.phone;
-
-              // 避免重复添加
-              if (!availableTeachers.find((t) => t.value === teacherId)) {
-                availableTeachers.push({
-                  label: `${teacherName}(${teacherPhone})`,
-                  value: teacherId,
-                });
-              }
-            });
-          }
-        });
-      }
-
-      setAllUsers(availableTeachers);
-
-      if (availableTeachers.length === 0) {
-        message.warning("该学生未加入任何组，无法指派老师");
-      }
-    } catch (error) {
-      console.error("获取学生详情失败:", error);
-      message.error("获取学生信息失败");
+      await StudentService.deleteStudent(id.toString());
+      reset();
+      message.success("学生删除成功");
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "删除失败");
     }
   };
 
-  const handleAssignSave = async (): Promise<void> => {
-    if (!assigningStudent) return;
-    try {
-      const existing = Array.isArray(assigningStudent.assignedTeachers)
-        ? (assigningStudent.assignedTeachers as any[]).map((x: any) =>
-            typeof x === "string" ? x : x._id
-          )
-        : [];
-      const toAssign = selectedTeacherIds.filter(
-        (id) => !existing.includes(id)
-      );
-      const toUnassign = existing.filter(
-        (id) => !selectedTeacherIds.includes(id)
-      );
-
-      if (toAssign.length) {
-        await StudentService.assignTeachers(assigningStudent._id, toAssign);
-      }
-      if (toUnassign.length) {
-        await StudentService.unassignTeachers(assigningStudent._id, toUnassign);
-      }
-
-      message.success("保存成功");
-      setAssignModalVisible(false);
-      setAssigningStudent(null);
-    } catch (e) {
-      // 全局拦截器提示
+  // 获取性别显示文本和颜色
+  const getGenderInfo = (gender: Gender) => {
+    switch (gender) {
+      case Gender.MALE:
+        return { text: "男", color: "blue" };
+      case Gender.FEMALE:
+        return { text: "女", color: "pink" };
+      case Gender.OTHER:
+        return { text: "其他", color: "default" };
+      default:
+        return { text: "未知", color: "default" };
     }
   };
 
-  const showDeleteConfirm = (studentId: string, name: string): void => {
-    confirm({
-      title: "确认删除",
-      icon: <ExclamationCircleOutlined />,
-      content: `确定要删除学生 "${name}" 吗？此操作不可恢复。`,
-      okText: "确定",
-      okType: "danger",
-      cancelText: "取消",
-      onOk: async () => {
-        await deleteStudent(studentId);
+  // 计算年龄
+  const calculateAge = (birthDate: string) => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+      age--;
+    }
+    return age;
+  };
+
+  // 表格列定义
+  const columns = [
+    {
+      title: "姓名",
+      dataIndex: "name",
+    },
+    {
+      title: "性别",
+      dataIndex: "gender",
+      render: (gender: Gender) => {
+        const { text, color } = getGenderInfo(gender);
+        return <Tag color={color}>{text}</Tag>;
       },
-    });
-  };
-
-  const columns = useMemo(
-    () =>
-      getTableColumns({
-        onView: openViewModal,
-        onEdit: openEditModal,
-        onDelete: (s) => showDeleteConfirm(s._id, s.name),
-        onAssign: openAssignModal,
-      }),
-    []
-  );
+    },
+    {
+      title: "年龄",
+      dataIndex: "birthDate",
+    },
+    {
+      title: "所属团队",
+      dataIndex: "team",
+      render: (team: Team) => (
+        <Tag color="blue">
+          <TeamOutlined /> {team?.name || "未分配"}
+        </Tag>
+      ),
+    },
+    {
+      title: "分配教师",
+      dataIndex: "teachers",
+      key: "teachers",
+      render: (teachers: User[]) => {
+        if (!teachers || teachers.length === 0) {
+          return <Tag color="default">未分配</Tag>;
+        }
+        return (
+          <Space wrap>
+            {teachers.map((teacher) => (
+              <Tag key={teacher.id} color="green">
+                {teacher.name || teacher.username}
+              </Tag>
+            ))}
+          </Space>
+        );
+      },
+    },
+    {
+      title: "备注",
+      dataIndex: "remarks",
+      key: "remarks",
+      ellipsis: true,
+      render: (text: string) => text || "-",
+    },
+    {
+      title: "创建时间",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text: string) => new Date(text).toLocaleDateString(),
+    },
+    {
+      title: "操作",
+      key: "action",
+      render: (_: any, record: Student) => (
+        <Space>
+          <Tooltip title="编辑">
+            <Button
+              type="link"
+              icon={<EditOutlined />}
+              onClick={() => handleOpenModal(record)}
+            />
+          </Tooltip>
+          <Popconfirm
+            title="确定要删除这个学生吗？"
+            onConfirm={() => handleDelete(record.id)}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Tooltip title="删除">
+              <Button type="link" danger icon={<DeleteOutlined />} />
+            </Tooltip>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 24,
-        }}
-      >
-        <Title level={3}>学生管理</Title>
+    <div style={{ padding: "24px" }}>
+      <Flex justify="space-between">
         <Space>
-          <Button icon={<SearchOutlined />} onClick={openSearchModal}>
-            搜索
-          </Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={openCreateModal}
-          >
-            添加学生
-          </Button>
+          <Form form={form} onFinish={reset}>
+            <Form.Item name="keyword" label="搜索">
+              <Input.Search onSearch={form.submit} placeholder="name、备注" />
+            </Form.Item>
+          </Form>
         </Space>
-      </div>
 
-      <Table
-        columns={columns}
-        dataSource={students}
-        rowKey="_id"
-        loading={loading}
-        pagination={{
-          showSizeChanger: true,
-          showQuickJumper: true,
-          showTotal: (total) => `共 ${total} 条记录`,
-        }}
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => handleOpenModal()}
+        >
+          创建学生
+        </Button>
+      </Flex>
+      {/* 学生列表 */}
+      <Table columns={columns} {...tableProps} />
+
+      <StudentFormModal
+        open={modalVisible}
+        initialValues={editingStudent}
+        handleCloseModal={handleCloseModal}
       />
-
-      {/* 创建学生模态框 */}
-      <Modal
-        title="添加学生"
-        open={createModalVisible}
-        onCancel={() => setCreateModalVisible(false)}
-        footer={null}
-        width={600}
-        destroyOnClose
-      >
-        <StudentForm
-          form={createForm}
-          onFinish={async (values) => {
-            const ok = await createStudent(values);
-            if (ok) setCreateModalVisible(false);
-          }}
-          onCancel={() => setCreateModalVisible(false)}
-        />
-      </Modal>
-
-      {/* 编辑学生模态框 */}
-      <Modal
-        title="编辑学生"
-        open={editModalVisible}
-        onCancel={() => {
-          setEditModalVisible(false);
-          setEditingStudentData(null);
-        }}
-        footer={null}
-        width={600}
-        destroyOnClose
-      >
-        <StudentForm
-          form={editForm}
-          isEdit
-          onFinish={async (values) => {
-            if (!editingStudent) return;
-            const ok = await updateStudent(editingStudent._id, values);
-            if (ok) {
-              setEditModalVisible(false);
-              setEditingStudentData(null);
-            }
-          }}
-          onCancel={() => {
-            setEditModalVisible(false);
-            setEditingStudentData(null);
-          }}
-        />
-      </Modal>
-
-      {/* 查看学生信息模态框 */}
-      <Modal
-        title="学生详情"
-        open={viewModalVisible}
-        onCancel={() => {
-          setViewModalVisible(false);
-          setViewStudent(null);
-        }}
-        footer={[
-          <Button key="close" onClick={() => setViewModalVisible(false)}>
-            关闭
-          </Button>,
-        ]}
-        width={500}
-        destroyOnClose
-      >
-        {viewStudent && <StudentDetail student={viewStudent} />}
-      </Modal>
-
-      {/* 搜索学生模态框 */}
-      <Modal
-        title="搜索学生"
-        open={searchModalVisible}
-        onCancel={() => setSearchModalVisible(false)}
-        footer={null}
-        width={600}
-        destroyOnClose
-      >
-        <StudentSearch
-          form={searchForm}
-          onFinish={async (values) => {
-            const ok = await searchStudents(values);
-            if (ok) setSearchModalVisible(false);
-          }}
-          onReset={resetSearch}
-          onCancel={() => setSearchModalVisible(false)}
-        />
-      </Modal>
-
-      {/* 指派老师模态框 */}
-      <Modal
-        title="指派老师"
-        open={assignModalVisible}
-        onCancel={() => setAssignModalVisible(false)}
-        onOk={handleAssignSave}
-        destroyOnClose
-      >
-        <Select
-          mode="multiple"
-          style={{ width: "100%" }}
-          placeholder="选择老师"
-          value={selectedTeacherIds}
-          onChange={setSelectedTeacherIds}
-          options={allUsers}
-        />
-      </Modal>
     </div>
   );
 };

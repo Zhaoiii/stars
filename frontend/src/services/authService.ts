@@ -1,14 +1,12 @@
-import api from "./api";
-import { LoginForm, RegisterForm, AuthResponse } from "../types/user";
+import api, { ApiResponse } from "./api";
+import { LoginForm, AuthResponse } from "../types/user";
 
 export const authService = {
-  async login(data: LoginForm): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>("/auth/login", data);
-    return response.data;
-  },
-
-  async register(data: RegisterForm): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>("/auth/register", data);
+  async login(data: LoginForm) {
+    const response = await api.post<ApiResponse<AuthResponse>>(
+      "/users/login",
+      data
+    );
     return response.data;
   },
 
@@ -36,4 +34,3 @@ export const authService = {
     localStorage.setItem("user", JSON.stringify(user));
   },
 };
-

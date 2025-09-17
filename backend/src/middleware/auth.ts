@@ -1,104 +1,92 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { User } from "../models/User";
-import { UserRole } from "../types/user";
+import { UserService } from "../services/UserService";
+import { ResponseUtil } from "../utils/response";
 
-interface AuthRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   user?: {
-    _id: string;
+    userId: number;
     username: string;
-    phone: string;
-    role: UserRole;
+    role: string;
   };
 }
 
+// JWT 认证中间件
 export const authenticateToken = async (
-  req: AuthRequest,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
 
     if (!token) {
-      res.status(401).json({ message: "请先登录" });
+      res.status(401).json({
+        success: false,
+        message: "访问令牌缺失",
+      });
       return;
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "fallback-secret"
-    ) as any;
-    const user = await User.findById(decoded._id).select("-password");
+    const userService = new UserService();
+    const decoded = await userService.verifyToken(token);
 
-    if (!user) {
-      res.status(401).json({ message: "用户不存在" });
-      return;
-    }
-
-    req.user = {
-      _id: (user._id as any).toString(),
-      username: user.username,
-      phone: user.phone,
-      role: user.role,
-    };
+    req.user = decoded;
     next();
   } catch (error) {
-    res.status(401).json({ message: "身份验证失败" });
+    res.status(403).json({
+      success: false,
+      message: "无效的访问令牌",
+    });
   }
 };
 
-export const auth = async (
-  req: AuthRequest,
+// 教师或管理员权限中间件
+export const requireTeacherOrAdmin = (
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): Promise<void> => {
-  try {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
-
-    if (!token) {
-      res.status(401).json({ message: "请先登录" });
-      return;
-    }
-
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "fallback-secret"
-    ) as any;
-    const user = await User.findById(decoded._id).select("-password");
-
-    if (!user) {
-      res.status(401).json({ message: "用户不存在" });
-      return;
-    }
-
-    req.user = {
-      _id: (user._id as any).toString(),
-      username: user.username,
-      phone: user.phone,
-      role: user.role,
-    };
-    next();
-  } catch (error) {
-    res.status(401).json({ message: "身份验证失败" });
+): void => {
+  if (
+    req.user?.role !== "admin" &&
+    req.user?.role !== "manager_teacher" &&
+    req.user?.role !== "teacher"
+  ) {
+    res.status(403).json({
+      success: false,
+      message: "需要教师或管理员权限",
+    });
+    return;
   }
+  next();
 };
 
-export const adminAuth = async (
-  req: AuthRequest,
+// 管理员权限中间件
+export const requireAdmin = (
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): Promise<void> => {
-  try {
-    await auth(req, res, () => {});
-
-    if (req.user?.role !== UserRole.ADMIN) {
-      res.status(403).json({ message: "需要管理员权限" });
-      return;
-    }
-
-    next();
-  } catch (error) {
-    res.status(403).json({ message: "权限验证失败" });
+) => {
+  if (req.user?.role !== "admin") {
+    ResponseUtil.forbidden(res, "需要管理员权限");
+    return;
   }
+  next();
 };
+
+// 管理员或管理教师权限中间件
+export const requireAdminOrManagerTeacher = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log(req.user);
+  if (req.user?.role !== "admin" && req.user?.role !== "manager_teacher") {
+    ResponseUtil.forbidden(res, "需要管理员或管理教师权限");
+    return;
+  }
+  next();
+};
+
+// 通用认证中间件（兼容旧名称）
+export const authMiddleware = authenticateToken;

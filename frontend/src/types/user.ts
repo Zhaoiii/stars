@@ -1,32 +1,64 @@
 export interface User {
-  _id: string;
+  id: number;
   username: string;
-  phone: string;
+  email: string;
+  name?: string;
   role: UserRole;
+  status: UserStatus;
+  phone?: string;
+  avatar?: string;
+  teamId?: number;
+  team?: Team;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Team {
+  id: number;
+  name: string;
+  description?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export enum UserRole {
-  USER = "user",
   ADMIN = "admin",
+  MANAGER_TEACHER = "manager_teacher",
+  TEACHER = "teacher",
+}
+
+export enum UserStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  SUSPENDED = "suspended",
 }
 
 export interface LoginForm {
-  phone: string;
+  username: string;
   password: string;
 }
 
-export interface RegisterForm {
+export interface CreateUserForm {
   username: string;
-  phone: string;
+  email: string;
   password: string;
-  confirmPassword: string;
+  name?: string;
+  role: UserRole;
+  phone?: string;
+  teamId?: number;
+}
+
+export interface UpdateUserForm {
+  username?: string;
+  email?: string;
+  name?: string;
+  role?: UserRole;
+  phone?: string;
+  avatar?: string;
+  teamId?: number;
 }
 
 export interface AuthResponse {
-  message: string;
-  token: string;
   user: User;
+  token: string;
 }
-

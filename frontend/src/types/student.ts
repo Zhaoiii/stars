@@ -1,44 +1,52 @@
+import { User } from "./user";
+
 export interface Student {
-  _id: string;
+  id: number;
   name: string;
-  gender: Gender;
   birthDate: string;
+  gender: Gender;
+  remarks?: string;
+  teamId: number;
+  team?: Team;
+  teachers?: User[];
   createdAt: string;
   updatedAt: string;
-  assignedTeachers?:
-    | Array<{
-        _id: string;
-        username: string;
-        phone: string;
-        role?: string;
-      }>
-    | string[];
-  groups?: Array<{
-    _id: string;
-    name: string;
-    teachers: Array<{
-      _id: string;
-      username: string;
-      phone: string;
-      role?: string;
-    }>;
-  }>;
+}
+
+export interface Team {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export enum Gender {
   MALE = "male",
   FEMALE = "female",
+  OTHER = "other",
 }
 
-export interface StudentFormData {
+export interface CreateStudentData {
   name: string;
-  gender: Gender;
   birthDate: string;
+  gender: Gender;
+  remarks?: string;
+  teamId: number;
+  teacherIds?: number[];
 }
+
+export type UpdateStudentData = {
+  id: number;
+} & CreateStudentData;
 
 export interface StudentSearchParams {
-  name?: string;
+  keyword?: string;
+  teamId?: number;
   gender?: Gender;
-  minAge?: number;
-  maxAge?: number;
+}
+
+export interface TeamStudentStats {
+  total: number;
+  byGender: Record<string, number>;
 }
