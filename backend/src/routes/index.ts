@@ -2,6 +2,9 @@ import { Router } from "express";
 import userRoutes from "./userRoutes";
 import teamRoutes from "./teamRoutes";
 import studentRoutes from "./studentRoutes";
+import evaluationRoutes from "./evaluationRoutes";
+import shortTermGoalRoutes from "./shortTermGoalRoutes";
+import multipleChoiceAnswerRoutes from "./multipleChoiceAnswerRoutes";
 
 const router = Router();
 
@@ -9,6 +12,9 @@ const router = Router();
 router.use("/users", userRoutes);
 router.use("/teams", teamRoutes);
 router.use("/students", studentRoutes);
+router.use("/evaluation", evaluationRoutes);
+router.use("/short-term-goals", shortTermGoalRoutes);
+router.use("/multiple-choice-answers", multipleChoiceAnswerRoutes);
 
 // 健康检查
 router.get("/health", (req, res) => {

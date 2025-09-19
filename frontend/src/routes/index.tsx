@@ -10,6 +10,7 @@ import type { MenuProps } from "antd";
 import type { RouteObject } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 import Layout from "../components/Layout";
+// 评估配置页面（父）与子页面
 
 // 懒加载页面组件
 const HomePage = lazy(() => import("../pages/HomePage"));
@@ -23,8 +24,17 @@ const StudentManagementPage = lazy(
   () => import("../pages/StudentManagement/StudentManagementPage")
 );
 const LoginForm = lazy(() => import("../pages/LoginForm"));
+const ToolList = lazy(() => import("@/pages/AssessmentConfig/ToolList"));
+const ToolEditor = lazy(() => import("@/pages/AssessmentConfig/ToolEditor"));
 const AssessmentConfig = lazy(
   () => import("@/pages/AssessmentConfig/AssessmentConfig")
+);
+const ShortTermGoalList = lazy(
+  () => import("@/pages/ShortTermGoalManagement/ShortTermGoalList")
+);
+const MultipleChoiceAnswerList = lazy(
+  () =>
+    import("@/pages/MultipleChoiceAnswerManagement/MultipleChoiceAnswerList")
 );
 
 // 路由配置接口
@@ -148,6 +158,64 @@ export const routes: AppRoute[] = [
           requiredRole: UserRole.TEACHER,
           showInMenu: true,
           order: 5,
+        },
+        children: [
+          {
+            path: "",
+            element: (
+              <Suspense fallback={null}>
+                <ToolList />
+              </Suspense>
+            ),
+          },
+          {
+            path: ":id",
+            element: (
+              <Suspense fallback={null}>
+                <ToolEditor />
+              </Suspense>
+            ),
+            meta: {
+              title: "评估工具",
+              showInMenu: false,
+            },
+          },
+        ],
+      },
+      {
+        path: "/short-term-goals",
+        element: (
+          <ProtectedRoute requireAdmin>
+            <Suspense fallback={null}>
+              <ShortTermGoalList />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+        meta: {
+          title: "短期目标管理",
+          icon: <ToolOutlined />,
+          requiresAuth: true,
+          requiredRole: UserRole.ADMIN,
+          showInMenu: true,
+          order: 6,
+        },
+      },
+      {
+        path: "/multiple-choice-answers",
+        element: (
+          <ProtectedRoute requireAdmin>
+            <Suspense fallback={null}>
+              <MultipleChoiceAnswerList />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+        meta: {
+          title: "多选答案管理",
+          icon: <ToolOutlined />,
+          requiresAuth: true,
+          requiredRole: UserRole.ADMIN,
+          showInMenu: true,
+          order: 7,
         },
       },
     ],

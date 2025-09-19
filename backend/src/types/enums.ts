@@ -15,3 +15,18 @@ export enum Gender {
   FEMALE = "female",
   OTHER = "other",
 }
+
+// 评估工具：节点类型
+export enum EvaluationNodeType {
+  ROOT = "root",
+  CATEGORY = "category",
+  LONG_TERM_GOAL = "long_term_goal",
+}
+
+// 评估工具：评分方式
+export enum EvaluationScoringType {
+  NONE = "none",
+  QUANTITY = "quantity",
+  SINGLE_CHOICE = "single_choice",
+  MULTIPLE_CHOICE = "multiple_choice",
+}

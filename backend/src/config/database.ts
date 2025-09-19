@@ -2,6 +2,10 @@ import { DataSource } from "typeorm";
 import { User } from "../entities/User";
 import { Team } from "../entities/Team";
 import { Student } from "../entities/Student";
+import { EvaluationToolNode } from "../entities/EvaluationToolNode";
+import { EvaluationScoringOption } from "../entities/EvaluationScoringOption";
+import { ShortTermGoal } from "../entities/ShortTermGoal";
+import { MultipleChoiceAnswer } from "../entities/MultipleChoiceAnswer";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -15,7 +19,15 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE || "ba_system",
   synchronize: process.env.NODE_ENV === "development",
   logging: process.env.NODE_ENV === "development",
-  entities: [User, Team, Student],
+  entities: [
+    User,
+    Team,
+    Student,
+    EvaluationToolNode,
+    EvaluationScoringOption,
+    ShortTermGoal,
+    MultipleChoiceAnswer,
+  ],
   migrations: ["src/migrations/*.ts"],
   subscribers: ["src/subscriber/*.ts"],
 });
