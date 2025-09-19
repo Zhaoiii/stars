@@ -83,4 +83,11 @@ router.delete(
   controller.deleteOption
 );
 
+// 只读：获取某个节点的多选项
+router.get(
+  "/nodes/:id/options",
+  validateParams(IdParamSchema),
+  controller.listOptions
+);
+
 export default router;

@@ -16,7 +16,9 @@ import {
   EditOutlined,
   DeleteOutlined,
   TeamOutlined,
+  ProfileOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import { Student, Gender, Team } from "@/types/student";
 import { User } from "@/types/user";
 import { StudentService } from "@/services/studentService";
@@ -24,6 +26,7 @@ import useTable from "@/hooks/useTable";
 import StudentFormModal from "./components/StudentFormModal";
 
 const StudentManagementPage: React.FC = () => {
+  const navigate = useNavigate();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [form] = Form.useForm();
@@ -162,6 +165,13 @@ const StudentManagementPage: React.FC = () => {
               type="link"
               icon={<EditOutlined />}
               onClick={() => handleOpenModal(record)}
+            />
+          </Tooltip>
+          <Tooltip title="评估记录">
+            <Button
+              type="link"
+              icon={<ProfileOutlined />}
+              onClick={() => navigate(`/students/${record.id}/evaluations`)}
             />
           </Tooltip>
           <Popconfirm

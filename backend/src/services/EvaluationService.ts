@@ -200,6 +200,17 @@ export class EvaluationService {
     return result.affected !== 0;
   }
 
+  async listOptions(nodeId: string): Promise<EvaluationScoringOption[]> {
+    const node = await this.nodeRepo.findOne({ where: { id: nodeId } });
+    if (!node) throw new Error("节点不存在");
+    if (node.scoringType !== EvaluationScoringType.MULTIPLE_CHOICE) {
+      return [];
+    }
+    const res = await this.optionRepo.find({ where: { nodeId } });
+    console.log(res);
+    return res;
+  }
+
   // 树形查询：返回某个工具（root 节点）的完整树
   async getToolTree(rootId: string): Promise<any> {
     const root = await this.nodeRepo.findOne({ where: { id: rootId } });

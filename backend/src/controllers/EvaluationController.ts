@@ -119,6 +119,19 @@ export class EvaluationController {
     }
   };
 
+  listOptions = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const options = await this.service.listOptions(req.params.id);
+      ResponseUtil.success(res, options, "获取选项成功");
+    } catch (error) {
+      ResponseUtil.error(
+        res,
+        error instanceof Error ? error.message : "获取选项失败",
+        400
+      );
+    }
+  };
+
   updateOption = async (req: Request, res: Response): Promise<void> => {
     try {
       const option = await this.service.updateOption(req.params.id, req.body);

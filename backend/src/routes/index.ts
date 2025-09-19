@@ -5,6 +5,7 @@ import studentRoutes from "./studentRoutes";
 import evaluationRoutes from "./evaluationRoutes";
 import shortTermGoalRoutes from "./shortTermGoalRoutes";
 import multipleChoiceAnswerRoutes from "./multipleChoiceAnswerRoutes";
+import evaluationRecordRoutes from "./evaluationRecordRoutes";
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router.use("/students", studentRoutes);
 router.use("/evaluation", evaluationRoutes);
 router.use("/short-term-goals", shortTermGoalRoutes);
 router.use("/multiple-choice-answers", multipleChoiceAnswerRoutes);
+router.use("/evaluation-records", evaluationRecordRoutes);
 
 // 健康检查
 router.get("/health", (req, res) => {

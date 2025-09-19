@@ -6,6 +6,8 @@ import { EvaluationToolNode } from "../entities/EvaluationToolNode";
 import { EvaluationScoringOption } from "../entities/EvaluationScoringOption";
 import { ShortTermGoal } from "../entities/ShortTermGoal";
 import { MultipleChoiceAnswer } from "../entities/MultipleChoiceAnswer";
+import { EvaluationRecord } from "../entities/EvaluationRecord";
+import { EvaluationRecordItem } from "../entities/EvaluationRecordItem";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -27,6 +29,8 @@ export const AppDataSource = new DataSource({
     EvaluationScoringOption,
     ShortTermGoal,
     MultipleChoiceAnswer,
+    EvaluationRecord,
+    EvaluationRecordItem,
   ],
   migrations: ["src/migrations/*.ts"],
   subscribers: ["src/subscriber/*.ts"],

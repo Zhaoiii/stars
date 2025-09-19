@@ -65,4 +65,7 @@ export const EvaluationAPI = {
   deleteOption(id: string) {
     return api.delete<ApiResponse>(`/evaluation/options/${id}`);
   },
+  listOptions(nodeId: string) {
+    return api.get<ApiResponse>(`/evaluation/nodes/${nodeId}/options`);
+  },
 };
