@@ -34,7 +34,7 @@ export const authenticateToken = async (
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(403).json({
+    res.status(401).json({
       success: false,
       message: "无效的访问令牌",
     });
