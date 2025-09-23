@@ -91,4 +91,16 @@ export class EvaluationRecordController {
       ResponseUtil.error(res, "获取评估详情失败");
     }
   };
+
+  // 获取评估报告详情：工具树 + 条目分数/答案 + 学生信息
+  getReport = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const report = await this.service.getReport(id);
+      if (!report) return ResponseUtil.notFound(res, "评估记录不存在");
+      ResponseUtil.success(res, report, "获取评估报告成功");
+    } catch (error) {
+      ResponseUtil.error(res, "获取评估报告失败");
+    }
+  };
 }

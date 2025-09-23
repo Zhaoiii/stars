@@ -269,8 +269,12 @@ export class EvaluationService {
       if (node.scoringType === EvaluationScoringType.MULTIPLE_CHOICE) {
         options = await this.optionRepo.find({ where: { nodeId: node.id } });
       }
-
-      const childTrees = await Promise.all(children.map(buildTree));
+      // children 改为以 id 为 key 的对象
+      const childTreesArr = await Promise.all(children.map(buildTree));
+      const childTreesObj = childTreesArr.reduce((acc: any, c: any) => {
+        acc[String(c.id)] = c;
+        return acc;
+      }, {} as Record<string, any>);
       return {
         id: node.id,
         parentId: node.parentId,
@@ -285,7 +289,7 @@ export class EvaluationService {
           node.scoringType === EvaluationScoringType.MULTIPLE_CHOICE
             ? options
             : undefined,
-        children: childTrees,
+        children: childTreesObj,
         createdAt: node.createdAt,
         updatedAt: node.updatedAt,
       };

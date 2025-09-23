@@ -5,6 +5,8 @@ import {
   EvaluationRecordStatus,
 } from "../entities/EvaluationRecord";
 import { EvaluationRecordItem } from "../entities/EvaluationRecordItem";
+import { Student } from "../entities/Student";
+import { EvaluationService } from "./EvaluationService";
 
 export interface CreateEvaluationRecordPayload {
   studentId: string;
@@ -14,10 +16,14 @@ export interface CreateEvaluationRecordPayload {
 export class EvaluationRecordService {
   private recordRepo: Repository<EvaluationRecord>;
   private itemRepo: Repository<EvaluationRecordItem>;
+  private studentRepo: Repository<Student>;
+  private evaluationService: EvaluationService;
 
   constructor() {
     this.recordRepo = AppDataSource.getRepository(EvaluationRecord);
     this.itemRepo = AppDataSource.getRepository(EvaluationRecordItem);
+    this.studentRepo = AppDataSource.getRepository(Student);
+    this.evaluationService = new EvaluationService();
   }
 
   async listByStudent(studentId: string): Promise<EvaluationRecord[]> {
@@ -103,5 +109,69 @@ export class EvaluationRecordService {
 
   async getById(recordId: string): Promise<EvaluationRecord | null> {
     return this.recordRepo.findOne({ where: { id: recordId } });
+  }
+
+  // 聚合报告：工具树 + 评估条目分数/答案 + 学生信息
+  async getReport(recordId: string): Promise<any | null> {
+    const record = await this.recordRepo.findOne({ where: { id: recordId } });
+    if (!record) return null;
+
+    const [student, items, toolTree] = await Promise.all([
+      this.studentRepo.findOne({ where: { id: parseInt(record.studentId) } }),
+      this.itemRepo.find({ where: { evaluationId: recordId } }),
+      this.evaluationService.getToolTree(record.toolId),
+    ]);
+
+    // 建立条目映射：longTermGoalId -> { answer, score }
+    const itemMap = new Map<string, { answer: any; score: number | null }>();
+    for (const it of items) {
+      itemMap.set(String(it.longTermGoalId), {
+        answer: it.answer ?? null,
+        score: it.score ?? null,
+      });
+    }
+
+    // 深度拷贝并注入分数/答案；父节点分数 = 子节点分数之和；叶子分数 = 条目分数
+    const injectScores = (node: any): any => {
+      // 后端 getToolTree 已返回 children 为对象（id->node）
+      const childObj =
+        node.children && typeof node.children === "object" ? node.children : {};
+      const childEntries = Object.entries(childObj) as Array<[string, any]>;
+      const injectedChildren: Record<string, any> = {};
+      for (const [id, child] of childEntries) {
+        injectedChildren[id] = injectScores(child);
+      }
+
+      const mapped = itemMap.get(String(node.id));
+      const isLeaf = childEntries.length === 0;
+
+      let nodeScore = 0;
+      if (isLeaf) {
+        nodeScore = Number(mapped?.score ?? 0) || 0;
+      } else {
+        nodeScore = Object.values(injectedChildren).reduce(
+          (sum: number, c: any) => sum + (Number((c as any)?.score) || 0),
+          0
+        );
+      }
+
+      const self: any = {
+        ...node,
+        children: injectedChildren,
+        score: nodeScore,
+      };
+      if (mapped) {
+        self.answer = mapped.answer;
+      }
+      return self;
+    };
+
+    const treeWithScores = injectScores(toolTree);
+
+    return {
+      student: student ?? null,
+      evaluation: record,
+      toolTree: treeWithScores,
+    };
   }
 }

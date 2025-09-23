@@ -42,6 +42,12 @@ const MultipleChoiceAnswerList = lazy(
   () =>
     import("@/pages/MultipleChoiceAnswerManagement/MultipleChoiceAnswerList")
 );
+const TemplateEditor = lazy(
+  () => import("@/pages/ReportTemplates/TemplateEditor")
+);
+const TemplateManagement = lazy(
+  () => import("@/pages/ReportTemplates/TemplateManagement")
+);
 
 // 路由配置接口
 export interface AppRoute {
@@ -222,6 +228,38 @@ export const routes: AppRoute[] = [
           requiredRole: UserRole.ADMIN,
           showInMenu: true,
           order: 6,
+        },
+      },
+      {
+        path: "/report-templates",
+        element: (
+          <ProtectedRoute requireAdmin>
+            <Suspense fallback={null}>
+              <TemplateManagement />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+        meta: {
+          title: "报告模板管理",
+          icon: <ToolOutlined />,
+          requiresAuth: true,
+          requiredRole: UserRole.ADMIN,
+          showInMenu: true,
+          order: 8,
+        },
+      },
+      {
+        path: "/report-templates/editor",
+        element: (
+          <ProtectedRoute requireAdmin>
+            <Suspense fallback={null}>
+              <TemplateEditor />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+        meta: {
+          title: "报告模板编辑器",
+          showInMenu: false,
         },
       },
       {

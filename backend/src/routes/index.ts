@@ -6,6 +6,7 @@ import evaluationRoutes from "./evaluationRoutes";
 import shortTermGoalRoutes from "./shortTermGoalRoutes";
 import multipleChoiceAnswerRoutes from "./multipleChoiceAnswerRoutes";
 import evaluationRecordRoutes from "./evaluationRecordRoutes";
+import reportTemplateRoutes from "./reportTemplateRoutes";
 
 const router = Router();
 
@@ -17,6 +18,7 @@ router.use("/evaluation", evaluationRoutes);
 router.use("/short-term-goals", shortTermGoalRoutes);
 router.use("/multiple-choice-answers", multipleChoiceAnswerRoutes);
 router.use("/evaluation-records", evaluationRecordRoutes);
+router.use("/report-templates", reportTemplateRoutes);
 
 // 健康检查
 router.get("/health", (req, res) => {

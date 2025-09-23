@@ -130,6 +130,8 @@ const Layout: React.FC = () => {
             margin: "24px",
             padding: 24,
             minHeight: 280,
+            maxHeight: "calc(100vh - 100px)",
+            overflow: "auto",
             background: "#fff",
             borderRadius: "8px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",

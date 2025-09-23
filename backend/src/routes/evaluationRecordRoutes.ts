@@ -59,6 +59,13 @@ router.get(
   controller.listItems
 );
 
+// 获取评估报告详情（工具树 + 分数/答案 + 学生信息）
+router.get(
+  "/records/:id/report",
+  validateParams(IdParamSchema),
+  controller.getReport
+);
+
 // 评估详情
 router.get("/records/:id", validateParams(IdParamSchema), controller.getById);
 

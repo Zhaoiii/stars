@@ -8,6 +8,7 @@ import { ShortTermGoal } from "../entities/ShortTermGoal";
 import { MultipleChoiceAnswer } from "../entities/MultipleChoiceAnswer";
 import { EvaluationRecord } from "../entities/EvaluationRecord";
 import { EvaluationRecordItem } from "../entities/EvaluationRecordItem";
+import { ReportTemplate } from "../entities/ReportTemplate";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -31,6 +32,7 @@ export const AppDataSource = new DataSource({
     MultipleChoiceAnswer,
     EvaluationRecord,
     EvaluationRecordItem,
+    ReportTemplate,
   ],
   migrations: ["src/migrations/*.ts"],
   subscribers: ["src/subscriber/*.ts"],
