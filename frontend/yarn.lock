@@ -703,6 +703,11 @@
   resolved "https://registry.npmmirror.com/@tiptap/extension-code/-/extension-code-2.26.1.tgz#ed289955423da20faa6ef4c81472835ac5fe1574"
   integrity sha512-GU9deB1A/Tr4FMPu71CvlcjGKwRhGYz60wQ8m4aM+ELZcVIcZRa1ebR8bExRIEWnvRztQuyRiCQzw2N0xQJ1QQ==
 
+"@tiptap/extension-color@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.npmmirror.com/@tiptap/extension-color/-/extension-color-3.5.0.tgz#9c797a72edf2f9490e583263dc0a82b60e41416a"
+  integrity sha512-hwr8wXbcPvIZ2Au+FigBbbNF0shMrICQ7CX9sq0y2O6sUvoIW3AWsfNotK4SXngZwJqj7Op/3BEhusAmXOI5uQ==
+
 "@tiptap/extension-document@^2.26.1":
   version "2.26.1"
   resolved "https://registry.npmmirror.com/@tiptap/extension-document/-/extension-document-2.26.1.tgz#3e65e4833fee138e5afaed4be586d75db10cb8b6"
@@ -719,6 +724,11 @@
   integrity sha512-OJF+H6qhQogVTMedAGSWuoL1RPe3LZYXONuFCVyzHnvvMpK+BP1vm180E2zDNFnn/DVA+FOrzNGpZW7YjoFH1w==
   dependencies:
     tippy.js "^6.3.7"
+
+"@tiptap/extension-font-family@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.npmmirror.com/@tiptap/extension-font-family/-/extension-font-family-3.5.0.tgz#fc18ab61c9cb9a09068bff257943b0ead2c57205"
+  integrity sha512-a5Wo14nNcUuiq9u0yh/zINf/QCsyGaQALa+gPnOi+CnOT4v7u6I5zrISdVFtlffYOGx1+LiNC9D05yxzbCKamg==
 
 "@tiptap/extension-gapcursor@^2.26.1":
   version "2.26.1"
@@ -795,15 +805,30 @@
   resolved "https://registry.npmmirror.com/@tiptap/extension-table/-/extension-table-2.26.1.tgz#26d45cd3f68def655c51c8ccbc6a3af507bdf49c"
   integrity sha512-LQ63CK53qx2ZsbLTB4mUX0YCoGC0GbYQ82jS3kD+K7M/mb9MCkefvDk6rA8rXF8TjfGnv6o/Fseoot8uhH3qfg==
 
+"@tiptap/extension-text-align@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.npmmirror.com/@tiptap/extension-text-align/-/extension-text-align-3.5.0.tgz#36acd0aebcbb6b5b5c6ec9457eccdc8ee2879bfd"
+  integrity sha512-jzB9FUvXHbWig1/mMwTKwq1dquh8N1AUihYoAVKNFDotyZX0ACHtMAkODnFWq5N32DhRkl34TT0ZOw6ACA8gxg==
+
 "@tiptap/extension-text-style@^2.26.1":
   version "2.26.1"
   resolved "https://registry.npmmirror.com/@tiptap/extension-text-style/-/extension-text-style-2.26.1.tgz#a6be329ff881df9da37d9a8c353b2b2e7b8508b3"
   integrity sha512-t9Nc/UkrbCfnSHEUi1gvUQ2ZPzvfdYFT5TExoV2DTiUCkhG6+mecT5bTVFGW3QkPmbToL+nFhGn4ZRMDD0SP3Q==
 
+"@tiptap/extension-text-style@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.npmmirror.com/@tiptap/extension-text-style/-/extension-text-style-3.5.0.tgz#bd8be026f478866968cc1a24c38d69d235beedb7"
+  integrity sha512-AZ9F2rYnHBdAwQVhXSH8GO0btKY32ieY53BoWq31HjTWhNycmv7eQ6sSP2TwHkSKqeXYP7W5BxcVvFE31ctHQg==
+
 "@tiptap/extension-text@^2.26.1":
   version "2.26.1"
   resolved "https://registry.npmmirror.com/@tiptap/extension-text/-/extension-text-2.26.1.tgz#a51a11aa446d32b136851ce5173c89ad5ff0f57a"
   integrity sha512-p2n8WVMd/2vckdJlol24acaTDIZAhI7qle5cM75bn01sOEZoFlSw6SwINOULrUCzNJsYb43qrLEibZb4j2LeQw==
+
+"@tiptap/extension-underline@^3.5.0":
+  version "3.5.0"
+  resolved "https://registry.npmmirror.com/@tiptap/extension-underline/-/extension-underline-3.5.0.tgz#fbda004fdc7568484a6ad1210627c8e9762bba23"
+  integrity sha512-ZbeVF+TXy7hsJEYvpMBns6OO3J321SRsXXkzmbcaDku7pKOTcfJoLXwM6HyGQUQUe307wKSBijmi3jxrJJYiHA==
 
 "@tiptap/pm@^2.26.1", "@tiptap/pm@^2.6.6":
   version "2.26.1"

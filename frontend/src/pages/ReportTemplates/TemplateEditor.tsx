@@ -262,17 +262,19 @@ const TemplateEditor: React.FC = () => {
                     flex: 1,
                     padding: 24,
                     overflow: "auto",
-                    background: "#fff",
+                    background: "#f5f5f5",
                   }}
                 >
-                  <EditorContent
-                    editor={editor}
-                    style={{
-                      minHeight: "calc(100vh - 200px)",
-                      fontSize: 16,
-                      lineHeight: 1.6,
-                    }}
-                  />
+                  <div className="editor-page">
+                    <EditorContent
+                      editor={editor}
+                      style={{
+                        minHeight: "calc(100vh - 248px)",
+                        fontSize: 16,
+                        lineHeight: 1.6,
+                      }}
+                    />
+                  </div>
                 </div>
               </Card>
             </Col>

@@ -8,6 +8,32 @@
   color: #333;
 }
 
+/* A4 页面容器（编辑区宽度限制为 A4 宽度） */
+.editor-page {
+  width: 210mm; /* A4 宽度 */
+  min-height: 297mm; /* 仅用于视觉参考，可按需调整 */
+  margin: 0 auto; /* 居中 */
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+}
+
+/* 内边距：让内容不贴边（配合 .ProseMirror 的 padding 一起生效） */
+.editor-page .ProseMirror {
+  padding: 24mm; /* 典型页边距 */
+}
+
+/* 打印时移除阴影边框，适配 A4 */
+@media print {
+  .editor-page {
+    width: 210mm !important;
+    min-height: auto;
+    box-shadow: none;
+    border: none;
+  }
+}
+
 .ProseMirror p {
   margin: 0 0 1em 0;
 }
@@ -84,6 +110,8 @@
   border-collapse: collapse;
   margin: 1em 0;
   width: 100%;
+  max-width: 100%;
+  table-layout: fixed; /* 防止列无限拉伸 */
   border: 1px solid #e1e5e9;
   border-radius: 6px;
   overflow: hidden;
@@ -96,6 +124,9 @@
   text-align: left;
   vertical-align: top;
   min-width: 100px;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .ProseMirror th {
