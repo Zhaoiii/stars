@@ -16,18 +16,15 @@ import { EvaluationAPI } from "@/services/evaluationService";
 import { EvaluationRecordAPI } from "@/services/evaluationRecordService";
 import { MultipleChoiceAnswerAPI } from "@/services/multipleChoiceAnswerService";
 import {
-  EvaluationNodeType,
   EvaluationScoringType,
   EvaluationToolNodeDTO,
+  QuantityRule,
+  SingleChoiceRule,
 } from "@/types/evaluation";
 
 const { Panel } = Collapse;
 const { Title, Paragraph } = Typography;
 
-type ChildrenState = Record<
-  string,
-  { loaded: boolean; loading: boolean; children: EvaluationToolNodeDTO[] }
->; // nodeId -> children
 type OptionsState = Record<
   string,
   {
@@ -40,7 +37,6 @@ type OptionsState = Record<
 const RunEvaluationPage: React.FC = () => {
   const { recordId } = useParams<{ id: string; recordId: string }>();
   const [root, setRoot] = useState<EvaluationToolNodeDTO | null>(null);
-  const [childrenMap, setChildrenMap] = useState<ChildrenState>({});
   const [optionsMap, setOptionsMap] = useState<OptionsState>({});
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [bootLoading, setBootLoading] = useState(false);
@@ -51,7 +47,7 @@ const RunEvaluationPage: React.FC = () => {
   >(null);
   const readOnly = recordStatus === "completed";
 
-  // 初始化：start 评估并拿到 toolId，然后仅加载根节点信息（树头），子节点下钻按展开再请求
+  // 初始化：start 评估，拿到 toolId，并一次性加载完整树与需要的多选项
   useEffect(() => {
     const bootstrap = async () => {
       if (!recordId) return;
@@ -67,12 +63,18 @@ const RunEvaluationPage: React.FC = () => {
           setToolId(tool);
           const rootRes = await EvaluationAPI.getToolTree(tool);
           const rootNode = rootRes.data.data as EvaluationToolNodeDTO;
-          // 为避免一次性渲染庞大树，仅保留根元信息，并清空其 children，按需加载
-          setRoot({ ...rootNode, children: [] });
-          setChildrenMap((prev) => ({
-            ...prev,
-            [rootNode.id]: { loaded: false, loading: false, children: [] },
-          }));
+          // 一次性加载完整树
+          setRoot(rootNode);
+          // 预加载所有多选节点的选项
+          const collectIds = (n: EvaluationToolNodeDTO, acc: string[] = []) => {
+            if (n.scoringType === EvaluationScoringType.MULTIPLE_CHOICE) {
+              acc.push(n.id);
+            }
+            (n.children || []).forEach((c) => collectIds(c, acc));
+            return acc;
+          };
+          const allMultiIds = collectIds(rootNode, []);
+          await Promise.all(allMultiIds.map((nid) => loadOptions(nid)));
           // 拉取已保存的条目用于回显
           const itemsRes = await EvaluationRecordAPI.listItems(recordId);
           const items = itemsRes.data.data || [];
@@ -90,56 +92,6 @@ const RunEvaluationPage: React.FC = () => {
     };
     bootstrap();
   }, [recordId]);
-
-  const onExpand = async (node: EvaluationToolNodeDTO) => {
-    // 展开分类/目标节点：懒加载子节点
-    const entry = childrenMap[node.id];
-    if (!entry || (!entry.loaded && !entry.loading)) {
-      setChildrenMap((prev) => ({
-        ...prev,
-        [node.id]: {
-          ...(prev[node.id] || { children: [] }),
-          loading: true,
-          loaded: false,
-        },
-      }));
-      try {
-        const res = await EvaluationAPI.getChildren(node.id);
-        const children: EvaluationToolNodeDTO[] = res.data.data || [];
-        setChildrenMap((prev) => ({
-          ...prev,
-          [node.id]: { loaded: true, loading: false, children },
-        }));
-        // 注册可继续展开的子节点（非长期目标）
-        setChildrenMap((prev) => {
-          const next: ChildrenState = { ...prev };
-          for (const child of children) {
-            if (child.nodeType !== EvaluationNodeType.LONG_TERM_GOAL) {
-              if (!next[child.id]) {
-                next[child.id] = {
-                  loaded: false,
-                  loading: false,
-                  children: [],
-                };
-              }
-            }
-          }
-          return next;
-        });
-      } catch (e: any) {
-        setChildrenMap((prev) => ({
-          ...prev,
-          [node.id]: { loaded: false, loading: false, children: [] },
-        }));
-        message.error(e.response?.data?.message || "加载子节点失败");
-      }
-    }
-
-    // 如果自身是多选题，展开时加载选项
-    if (node.scoringType === EvaluationScoringType.MULTIPLE_CHOICE) {
-      await loadOptions(node.id);
-    }
-  };
 
   const loadOptions = async (nodeId: string) => {
     const opEntry = optionsMap[nodeId];
@@ -174,14 +126,79 @@ const RunEvaluationPage: React.FC = () => {
     }
   };
 
+  // 计算分数
+  const calculateScore = (node: EvaluationToolNodeDTO, answer: any): number => {
+    if (!node.scoringConfig || !Array.isArray(node.scoringConfig)) {
+      return 0;
+    }
+
+    if (node.scoringType === EvaluationScoringType.QUANTITY) {
+      const quantity = answer?.quantity || 0;
+      // 按数量从大到小排序，找到第一个满足条件的等级
+      const sortedRules = [...(node.scoringConfig as QuantityRule[])].sort(
+        (a, b) => b.quantity - a.quantity
+      );
+      for (const rule of sortedRules) {
+        if (quantity >= rule.quantity) {
+          return rule.score;
+        }
+      }
+      return 0;
+    }
+
+    if (node.scoringType === EvaluationScoringType.MULTIPLE_CHOICE) {
+      const selectedCount = answer?.selected?.length || 0;
+      // 按数量从大到小排序，找到第一个满足条件的等级
+      const sortedRules = [...(node.scoringConfig as QuantityRule[])].sort(
+        (a, b) => b.quantity - a.quantity
+      );
+      for (const rule of sortedRules) {
+        if (selectedCount >= rule.quantity) {
+          return rule.score;
+        }
+      }
+      return 0;
+    }
+
+    if (node.scoringType === EvaluationScoringType.SINGLE_CHOICE) {
+      const selectedLabel = answer?.label;
+      if (!selectedLabel) return 0;
+      // 找到匹配的选项
+      const rule = (node.scoringConfig as SingleChoiceRule[]).find(
+        (r) => r.label === selectedLabel
+      );
+      return rule?.score || 0;
+    }
+
+    return 0;
+  };
+
   const saveItem = async (longTermGoalId: string, answer: any) => {
     if (!recordId) return;
     if (readOnly) return;
     try {
       setSaving(true);
+
+      // 找到对应的节点来计算分数
+      const findNode = (
+        node: EvaluationToolNodeDTO,
+        targetId: string
+      ): EvaluationToolNodeDTO | null => {
+        if (node.id === targetId) return node;
+        for (const child of node.children || []) {
+          const found = findNode(child, targetId);
+          if (found) return found;
+        }
+        return null;
+      };
+
+      const node = root ? findNode(root, longTermGoalId) : null;
+      const score = node ? calculateScore(node, answer) : 0;
+
       await EvaluationRecordAPI.upsertItem(recordId, {
         longTermGoalId,
         answer,
+        score,
       });
       setAnswers((prev) => ({ ...prev, [longTermGoalId]: answer }));
     } catch (e: any) {
@@ -268,33 +285,19 @@ const RunEvaluationPage: React.FC = () => {
   };
 
   const renderNode = (node: EvaluationToolNodeDTO) => {
-    const entry = childrenMap[node.id];
-    const hasChildren = !!entry; // 有 childrenMap 记录的都认为可以展开
+    const inner = node.children || [];
+    const hasChildren = inner.length > 0;
     if (hasChildren) {
-      const inner = entry?.children || [];
       return (
-        <Collapse
-          onChange={(keys) => {
-            // 当展开该 Panel 时触发加载
-            if (
-              Array.isArray(keys) ? keys.includes(node.id) : keys === node.id
-            ) {
-              onExpand(node);
-            }
-          }}
-        >
+        <Collapse defaultActiveKey={[node.id]}>
           <Panel header={node.title} key={node.id}>
-            {entry?.loading ? (
-              <Spin />
-            ) : (
-              <div>
-                {inner.map((c) => (
-                  <div key={c.id} style={{ marginBottom: 12 }}>
-                    {renderNode({ ...c, children: [] })}
-                  </div>
-                ))}
-              </div>
-            )}
+            <div>
+              {inner.map((c) => (
+                <div key={c.id} style={{ marginBottom: 12 }}>
+                  {renderNode(c)}
+                </div>
+              ))}
+            </div>
           </Panel>
         </Collapse>
       );

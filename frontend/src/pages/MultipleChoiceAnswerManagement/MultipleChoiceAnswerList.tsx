@@ -181,26 +181,16 @@ const MultipleChoiceAnswerList: React.FC = () => {
       },
       {
         title: "工具",
-        dataIndex: ["tool", "title"],
-        render: (_: any, r: MultipleChoiceAnswerDTO) => r.tool?.title || "-",
+        dataIndex: "toolId",
       },
       {
         title: "长期目标",
-        dataIndex: ["longTermGoal", "title"],
-        render: (_: any, r: MultipleChoiceAnswerDTO) => (
-          <Space>
-            <span>{r.longTermGoal?.title || "-"}</span>
-            {r.longTermGoal?.targetAge ? (
-              <Tag color="blue">{r.longTermGoal.targetAge}月</Tag>
-            ) : null}
-          </Space>
-        ),
+        dataIndex: "longTermGoalId",
       },
       {
         title: "创建人",
-        dataIndex: ["creator", "username"],
-        render: (_: any, r: MultipleChoiceAnswerDTO) =>
-          r.creator?.username || (r.createdBy ? r.createdBy : "系统"),
+        dataIndex: "creatorName",
+        render: (_: any, r: MultipleChoiceAnswerDTO) => r.createdBy || "系统",
         width: 160,
       },
       {

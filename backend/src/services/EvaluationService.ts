@@ -2,6 +2,8 @@ import { Repository } from "typeorm";
 import { AppDataSource } from "../config/database";
 import { EvaluationToolNode } from "../entities/EvaluationToolNode";
 import { EvaluationScoringOption } from "../entities/EvaluationScoringOption";
+import { MultipleChoiceAnswer } from "../entities/MultipleChoiceAnswer";
+import { ShortTermGoal } from "../entities/ShortTermGoal";
 import { EvaluationNodeType, EvaluationScoringType } from "../types/enums";
 
 export interface CreateToolData {
@@ -33,10 +35,15 @@ export interface UpdateOptionData extends Partial<CreateOptionData> {}
 export class EvaluationService {
   private nodeRepo: Repository<EvaluationToolNode>;
   private optionRepo: Repository<EvaluationScoringOption>;
+  private multipleChoiceAnswerRepo: Repository<MultipleChoiceAnswer>;
+  private shortTermGoalRepo: Repository<ShortTermGoal>;
 
   constructor() {
     this.nodeRepo = AppDataSource.getRepository(EvaluationToolNode);
     this.optionRepo = AppDataSource.getRepository(EvaluationScoringOption);
+    this.multipleChoiceAnswerRepo =
+      AppDataSource.getRepository(MultipleChoiceAnswer);
+    this.shortTermGoalRepo = AppDataSource.getRepository(ShortTermGoal);
   }
 
   // 工具管理
@@ -81,10 +88,9 @@ export class EvaluationService {
     });
     if (!parent) throw new Error("父节点不存在");
 
-    // 分类/多选/none 时，scoringConfig 必须为 null
+    // 分类/none 时，scoringConfig 必须为 null
     if (
       data.nodeType === EvaluationNodeType.CATEGORY ||
-      data.scoringType === EvaluationScoringType.MULTIPLE_CHOICE ||
       data.scoringType === EvaluationScoringType.NONE
     ) {
       data.scoringConfig = null;
@@ -127,7 +133,6 @@ export class EvaluationService {
 
     if (
       data.nodeType === EvaluationNodeType.CATEGORY ||
-      data.scoringType === EvaluationScoringType.MULTIPLE_CHOICE ||
       data.scoringType === EvaluationScoringType.NONE
     ) {
       data.scoringConfig = null;
@@ -138,8 +143,45 @@ export class EvaluationService {
   }
 
   async deleteNode(id: string): Promise<boolean> {
-    const result = await this.nodeRepo.delete(id);
-    return result.affected !== 0;
+    // 先检查节点是否存在
+    const node = await this.nodeRepo.findOne({ where: { id } });
+    if (!node) {
+      return false;
+    }
+
+    // 使用事务确保所有相关数据都被正确删除
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. 手动删除多选答案（确保外键约束正确工作）
+      await queryRunner.manager.delete(MultipleChoiceAnswer, {
+        longTermGoalId: id,
+      });
+
+      // 2. 手动删除短期目标
+      await queryRunner.manager.delete(ShortTermGoal, { longTermGoalId: id });
+
+      // 3. 手动删除评分选项
+      await queryRunner.manager.delete(EvaluationScoringOption, { nodeId: id });
+
+      // 4. 删除节点本身
+      const result = await queryRunner.manager.delete(EvaluationToolNode, id);
+
+      if (result.affected === 0) {
+        await queryRunner.rollbackTransaction();
+        return false;
+      }
+
+      await queryRunner.commitTransaction();
+      return true;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   // 重排同级子节点顺序
@@ -238,10 +280,7 @@ export class EvaluationService {
         targetAge: node.targetAge,
         order: node.order,
         scoringType: node.scoringType,
-        scoringConfig:
-          node.scoringType === EvaluationScoringType.MULTIPLE_CHOICE
-            ? null
-            : node.scoringConfig,
+        scoringConfig: node.scoringConfig,
         options:
           node.scoringType === EvaluationScoringType.MULTIPLE_CHOICE
             ? options

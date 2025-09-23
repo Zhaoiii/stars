@@ -53,7 +53,7 @@ const ToolEditor: React.FC = () => {
     form.setFieldsValue({
       parentId: parentId || id,
       nodeType: EvaluationNodeType.LONG_TERM_GOAL,
-      scoringType: EvaluationScoringType.NONE,
+      scoringType: EvaluationScoringType.QUANTITY,
     });
   };
 
@@ -62,6 +62,7 @@ const ToolEditor: React.FC = () => {
     setNodeModalOpen(true);
     form.resetFields();
     form.setFieldsValue({
+      id: node?.id || undefined,
       parentId: node.parentId,
       nodeType: node.nodeType,
       title: node.title,
@@ -69,9 +70,8 @@ const ToolEditor: React.FC = () => {
       targetAge: node.targetAge || undefined,
       order: node.order,
       scoringType: node.scoringType,
-      scoringConfig: node.scoringConfig
-        ? JSON.stringify(node.scoringConfig)
-        : undefined,
+      // 直接回显数组，避免字符串化导致 Form.List 不渲染
+      scoringConfig: node.scoringConfig || undefined,
       _editId: node.id,
     } as any);
   };
@@ -79,7 +79,8 @@ const ToolEditor: React.FC = () => {
   const confirmDeleteNode = (nodeId: string) => {
     Modal.confirm({
       title: "确认删除该节点？",
-      content: "将级联删除其所有子节点与选项，且不可恢复。",
+      content:
+        "将级联删除其所有子节点、短期目标、多选答案和评分选项，且不可恢复。",
       okText: "删除",
       okButtonProps: { danger: true },
       onOk: async () => {
@@ -103,8 +104,7 @@ const ToolEditor: React.FC = () => {
       }
     }
     if (isEdit) {
-      const editId = (values as any)._editId as string;
-      const { _editId, ...payload } = values as any;
+      const { id: editId, ...payload } = values;
       await EvaluationAPI.updateNode(editId, payload);
     } else {
       await EvaluationAPI.createNode(values);
@@ -188,9 +188,6 @@ const ToolEditor: React.FC = () => {
             // 仅允许同级内重排
             const dragKey = (info.dragNode as any).key as string;
             const dropKey = (info.node as any).key as string;
-            // const dropPos = (info.node as any).pos as string;
-            // const dragParent = (info.dragNode as any).parent as any;
-            // const dropParent = (info.node as any).parent as any;
 
             // 简易：读取当前 tree，若父不同则忽略
             const findParentId = (
@@ -256,6 +253,9 @@ const ToolEditor: React.FC = () => {
         okText={isEdit ? "保存" : "创建"}
       >
         <Form layout="vertical" form={form}>
+          <Form.Item name="id" label="ID" hidden>
+            <InputNumber />
+          </Form.Item>
           <Form.Item
             name="parentId"
             label="父节点ID"

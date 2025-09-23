@@ -12,6 +12,7 @@ import {
 import { EvaluationNodeType, EvaluationScoringType } from "../types/enums";
 import { EvaluationScoringOption } from "./EvaluationScoringOption";
 import { ShortTermGoal } from "./ShortTermGoal";
+import { MultipleChoiceAnswer } from "./MultipleChoiceAnswer";
 
 @Entity("evaluation_tool_nodes")
 export class EvaluationToolNode extends BaseEntity {
@@ -68,6 +69,11 @@ export class EvaluationToolNode extends BaseEntity {
     cascade: true,
   })
   shortTermGoals: ShortTermGoal[];
+
+  @OneToMany(() => MultipleChoiceAnswer, (answer) => answer.longTermGoal, {
+    cascade: true,
+  })
+  multipleChoiceAnswers: MultipleChoiceAnswer[];
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
