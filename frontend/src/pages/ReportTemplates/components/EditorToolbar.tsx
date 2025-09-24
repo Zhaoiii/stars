@@ -74,6 +74,17 @@ export const EditorToolbar: React.FC<Props> = ({ editor }) => {
       .run();
   };
 
+  const insertFormInput = () => {
+    editor
+      ?.chain()
+      .focus()
+      .insertContent({
+        type: "formInput",
+        attrs: { initialValue: "", placeholder: "请输入…" },
+      })
+      .run();
+  };
+
   return (
     <div
       style={{
@@ -195,6 +206,9 @@ export const EditorToolbar: React.FC<Props> = ({ editor }) => {
           </Tooltip>
           <Tooltip title="插入表格">
             <Button icon={<TableOutlined />} onClick={insertTable} />
+          </Tooltip>
+          <Tooltip title="插入自定义输入框">
+            <Button onClick={insertFormInput}>输入框</Button>
           </Tooltip>
           <Tooltip title="插入列">
             <Button

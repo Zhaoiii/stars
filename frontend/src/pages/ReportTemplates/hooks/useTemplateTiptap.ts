@@ -11,6 +11,7 @@ import { Color } from "@tiptap/extension-color";
 import { Underline } from "@tiptap/extension-underline";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { FontFamily } from "@tiptap/extension-font-family";
+import { FormInput } from "../extensions/FormInput";
 
 // 带规则的单元格扩展
 export const RulefulCell = TableCell.extend({
@@ -70,6 +71,7 @@ export function useTemplateTiptap(initialContent: any) {
       TableRow,
       TableHeader,
       RulefulCell,
+      FormInput,
     ],
     content: initialContent || "",
     autofocus: true,
