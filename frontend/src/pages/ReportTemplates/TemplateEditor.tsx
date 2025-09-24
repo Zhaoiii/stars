@@ -131,19 +131,25 @@ const TemplateEditor: React.FC = () => {
     const cells = container.querySelectorAll("td, th");
     cells.forEach((cell) => {
       const rule = (cell as HTMLElement).getAttribute("data-rule");
-      const bg = (cell as HTMLElement).getAttribute("data-bg");
       if (!rule) return;
+
       try {
         const parsed = JSON.parse(rule);
         const expr = parsed?.expr as string;
         if (!expr) return;
+
+        // 执行规则表达式
         // eslint-disable-next-line no-new-func
         const fn = new Function("data", `with (data) { return (${expr}); }`);
-        const ok = !!fn(reportData);
-        if (ok && bg) {
-          (cell as HTMLElement).style.backgroundColor = bg;
+        const ruleResult = fn(reportData);
+
+        // 如果规则条件满足，应用背景色
+        if (ruleResult) {
+          (cell as HTMLElement).style.backgroundColor = "#90EE90"; // 浅绿色
         }
-      } catch {}
+      } catch (error) {
+        console.warn("规则执行失败:", error);
+      }
     });
     return container.innerHTML;
   };
@@ -236,33 +242,16 @@ const TemplateEditor: React.FC = () => {
       <Layout>
         <Content style={{ padding: 0, background: "#f5f5f5" }}>
           <Row style={{ height: "100%" }}>
-            <Col span={18} style={{ height: "100%" }}>
-              <Card
-                style={{
-                  overflow: "auto",
-                  height: "calc(100vh - 280px)",
-                  margin: 16,
-                  display: "flex",
-                  flexDirection: "column",
-                  borderRadius: 8,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-                bodyStyle={{
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  padding: 0,
-                }}
-              >
+            <Col span={18} style={{ position: "relative" }}>
+              <div style={{ height: "calc(100vh - 280px)", overflow: "auto" }}>
                 <EditorToolbar editor={editor} />
-
                 {/* 编辑器区域 */}
                 <div
                   style={{
                     flex: 1,
                     padding: 24,
                     overflow: "auto",
-                    background: "#f5f5f5",
+                    background: "#fff",
                   }}
                 >
                   <div className="editor-page">
@@ -276,7 +265,7 @@ const TemplateEditor: React.FC = () => {
                     />
                   </div>
                 </div>
-              </Card>
+              </div>
             </Col>
 
             <Col span={6} style={{ height: "100%" }}>

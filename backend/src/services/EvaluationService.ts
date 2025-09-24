@@ -289,6 +289,50 @@ export class EvaluationService {
           node.scoringType === EvaluationScoringType.MULTIPLE_CHOICE
             ? options
             : undefined,
+        children: childTreesArr,
+        createdAt: node.createdAt,
+        updatedAt: node.updatedAt,
+      };
+    };
+
+    return await buildTree(root);
+  }
+
+  async getToolTreeObj(rootId: string): Promise<any> {
+    const root = await this.nodeRepo.findOne({ where: { id: rootId } });
+    if (!root) throw new Error("工具不存在");
+    if (root.nodeType !== EvaluationNodeType.ROOT)
+      throw new Error("不是工具根节点");
+
+    const buildTree = async (node: EvaluationToolNode): Promise<any> => {
+      const children = await this.nodeRepo.find({
+        where: { parentId: node.id },
+        order: { order: "ASC", id: "ASC" },
+      });
+      let options: EvaluationScoringOption[] = [];
+      if (node.scoringType === EvaluationScoringType.MULTIPLE_CHOICE) {
+        options = await this.optionRepo.find({ where: { nodeId: node.id } });
+      }
+      // children 改为以 id 为 key 的对象
+      const childTreesArr = await Promise.all(children.map(buildTree));
+      const childTreesObj = childTreesArr.reduce((acc: any, c: any) => {
+        acc[String(c.id)] = c;
+        return acc;
+      }, {} as Record<string, any>);
+      return {
+        id: node.id,
+        parentId: node.parentId,
+        nodeType: node.nodeType,
+        title: node.title,
+        description: node.description,
+        targetAge: node.targetAge,
+        order: node.order,
+        scoringType: node.scoringType,
+        scoringConfig: node.scoringConfig,
+        options:
+          node.scoringType === EvaluationScoringType.MULTIPLE_CHOICE
+            ? options
+            : undefined,
         children: childTreesObj,
         createdAt: node.createdAt,
         updatedAt: node.updatedAt,

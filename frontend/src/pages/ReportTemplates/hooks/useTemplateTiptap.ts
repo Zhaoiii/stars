@@ -12,7 +12,7 @@ import { Underline } from "@tiptap/extension-underline";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { FontFamily } from "@tiptap/extension-font-family";
 
-// 带规则与背景色的单元格扩展
+// 带规则的单元格扩展
 export const RulefulCell = TableCell.extend({
   addAttributes() {
     return {
@@ -23,17 +23,6 @@ export const RulefulCell = TableCell.extend({
         renderHTML: (attributes) => {
           if (!attributes.dataRule) return {};
           return { "data-rule": attributes.dataRule };
-        },
-      },
-      dataBg: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("data-bg"),
-        renderHTML: (attributes) => {
-          if (!attributes.dataBg) return {};
-          return {
-            "data-bg": attributes.dataBg,
-            style: `background-color: ${attributes.dataBg}`,
-          };
         },
       },
     };
@@ -77,10 +66,10 @@ export function useTemplateTiptap(initialContent: any) {
       Placeholder.configure({
         placeholder: "在此编写模板内容，可插入表格与变量占位符…",
       }),
-      Table.configure({ resizable: false }),
+      Table.configure({ resizable: true }),
       TableRow,
-      RulefulCell,
       TableHeader,
+      RulefulCell,
     ],
     content: initialContent || "",
     autofocus: true,

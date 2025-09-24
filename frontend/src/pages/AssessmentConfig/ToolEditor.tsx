@@ -172,7 +172,7 @@ const ToolEditor: React.FC = () => {
     const convert = (node: EvaluationToolNodeDTO): TreeNode => ({
       title: renderTitle(node),
       key: node.id,
-      children: (node.children || []).map(convert),
+      children: (node.children || [])?.map(convert),
     });
     return tree ? [convert(tree)] : [];
   }, [tree]);

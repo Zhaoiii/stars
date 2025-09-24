@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Divider, Space, Tooltip, Select } from "antd";
 import {
   BoldOutlined,
@@ -10,6 +10,8 @@ import {
   ColumnHeightOutlined,
   MergeCellsOutlined,
   SplitCellsOutlined,
+  DeleteOutlined,
+  MinusOutlined,
 } from "@ant-design/icons";
 
 type Props = {
@@ -18,6 +20,51 @@ type Props = {
 
 export const EditorToolbar: React.FC<Props> = ({ editor }) => {
   const can = editor?.can();
+  const [fontFamily, setFontFamily] = useState<string>("");
+  const [fontSize, setFontSize] = useState<string>("");
+  const [textAlign, setTextAlign] = useState<string>("");
+
+  // 监听编辑器状态变化，更新工具栏状态
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateToolbar = () => {
+      try {
+        // 获取当前字体
+        const fontFamilyAttr = editor.getAttributes("textStyle");
+        const currentFontFamily = fontFamilyAttr?.fontFamily || "";
+        setFontFamily(currentFontFamily);
+
+        // 获取当前字体大小
+        const currentFontSize = fontFamilyAttr?.fontSize || "";
+        setFontSize(currentFontSize);
+
+        // 获取当前对齐方式
+        const textAlignAttr = editor.getAttributes("textAlign");
+        const currentTextAlign = textAlignAttr?.textAlign || "";
+        setTextAlign(currentTextAlign);
+      } catch (error) {
+        // 如果获取属性失败，重置为默认值
+        setFontFamily("");
+        setFontSize("");
+        setTextAlign("");
+      }
+    };
+
+    // 初始更新
+    updateToolbar();
+
+    // 监听选择变化和内容变化
+    editor.on("selectionUpdate", updateToolbar);
+    editor.on("transaction", updateToolbar);
+    editor.on("update", updateToolbar);
+
+    return () => {
+      editor.off("selectionUpdate", updateToolbar);
+      editor.off("transaction", updateToolbar);
+      editor.off("update", updateToolbar);
+    };
+  }, [editor]);
 
   const insertTable = () => {
     editor
@@ -34,6 +81,13 @@ export const EditorToolbar: React.FC<Props> = ({ editor }) => {
         borderBottom: "1px solid #f0f0f0",
         background: "#fafafa",
         borderRadius: "8px 8px 0 0",
+        position: "absolute",
+        left: "50%",
+        top: 0,
+        width: "100%",
+        transform: "translateX(-50%)",
+        zIndex: 1000,
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
       }}
     >
       <Space wrap>
@@ -42,6 +96,7 @@ export const EditorToolbar: React.FC<Props> = ({ editor }) => {
             size="small"
             style={{ width: 140 }}
             placeholder="字体"
+            value={fontFamily}
             onChange={(v) => editor?.chain().focus().setFontFamily(v).run()}
             options={[
               { label: "默认", value: "" },
@@ -54,6 +109,7 @@ export const EditorToolbar: React.FC<Props> = ({ editor }) => {
             size="small"
             style={{ width: 120 }}
             placeholder="字号"
+            value={fontSize}
             onChange={(v) =>
               editor
                 ?.chain()
@@ -73,6 +129,7 @@ export const EditorToolbar: React.FC<Props> = ({ editor }) => {
             size="small"
             style={{ width: 120 }}
             placeholder="对齐"
+            value={textAlign}
             onChange={(v) => editor?.chain().focus().setTextAlign(v).run()}
             options={[
               { label: "左对齐", value: "left" },
@@ -151,6 +208,20 @@ export const EditorToolbar: React.FC<Props> = ({ editor }) => {
               icon={<ColumnHeightOutlined />}
               onClick={() => editor?.chain().focus().addRowAfter().run()}
               disabled={!can?.addRowAfter?.()}
+            />
+          </Tooltip>
+          <Tooltip title="删除列">
+            <Button
+              icon={<MinusOutlined />}
+              onClick={() => editor?.chain().focus().deleteColumn().run()}
+              disabled={!can?.deleteColumn?.()}
+            />
+          </Tooltip>
+          <Tooltip title="删除行">
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={() => editor?.chain().focus().deleteRow().run()}
+              disabled={!can?.deleteRow?.()}
             />
           </Tooltip>
           <Tooltip title="合并单元格">
