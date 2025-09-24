@@ -183,11 +183,6 @@ export const EditorToolbar: React.FC<Props> = ({ editor }) => {
               onClick={() => editor?.chain().focus().toggleUnderline().run()}
             />
           </Tooltip>
-        </Space.Compact>
-
-        <Divider type="vertical" />
-
-        <Space.Compact>
           <Tooltip title="文本颜色">
             <input
               type="color"
@@ -204,12 +199,15 @@ export const EditorToolbar: React.FC<Props> = ({ editor }) => {
               }
             />
           </Tooltip>
+        </Space.Compact>
+
+        <Divider type="vertical" />
+
+        <Space.Compact>
           <Tooltip title="插入表格">
             <Button icon={<TableOutlined />} onClick={insertTable} />
           </Tooltip>
-          <Tooltip title="插入自定义输入框">
-            <Button onClick={insertFormInput}>输入框</Button>
-          </Tooltip>
+
           <Tooltip title="插入列">
             <Button
               icon={<ColumnWidthOutlined />}
@@ -253,6 +251,12 @@ export const EditorToolbar: React.FC<Props> = ({ editor }) => {
             />
           </Tooltip>
         </Space.Compact>
+
+        <Divider type="vertical" />
+
+        <Tooltip title="插入自定义输入框">
+          <Button onClick={insertFormInput}>输入框</Button>
+        </Tooltip>
       </Space>
     </div>
   );

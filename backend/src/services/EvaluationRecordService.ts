@@ -111,6 +111,16 @@ export class EvaluationRecordService {
     return this.recordRepo.findOne({ where: { id: recordId } });
   }
 
+  async saveReportContent(
+    recordId: string,
+    content: any
+  ): Promise<EvaluationRecord> {
+    const record = await this.recordRepo.findOne({ where: { id: recordId } });
+    if (!record) throw new Error("评估记录不存在");
+    record.reportContent = content ?? null;
+    return await this.recordRepo.save(record);
+  }
+
   // 聚合报告：工具树 + 评估条目分数/答案 + 学生信息
   async getReport(recordId: string): Promise<any | null> {
     const record = await this.recordRepo.findOne({ where: { id: recordId } });

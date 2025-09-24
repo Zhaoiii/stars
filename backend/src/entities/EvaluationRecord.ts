@@ -68,4 +68,8 @@ export class EvaluationRecord extends BaseEntity {
 
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
+
+  // 存储渲染后的报告（tiptap JSON 或 HTML，采用 JSON 更便于再次编辑）
+  @Column({ type: "jsonb", nullable: true })
+  reportContent: any | null;
 }

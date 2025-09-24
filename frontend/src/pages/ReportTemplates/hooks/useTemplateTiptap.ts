@@ -67,7 +67,7 @@ export function useTemplateTiptap(initialContent: any) {
       Placeholder.configure({
         placeholder: "在此编写模板内容，可插入表格与变量占位符…",
       }),
-      Table.configure({ resizable: true }),
+      Table.configure({ resizable: false }),
       TableRow,
       TableHeader,
       RulefulCell,

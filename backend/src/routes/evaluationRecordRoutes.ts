@@ -17,6 +17,9 @@ const UpsertItemSchema = z.object({
   answer: z.any().nullable().optional(),
   score: z.number().nullable().optional(),
 });
+const SaveReportSchema = z.object({
+  content: z.any(),
+});
 
 router.use(authenticateToken);
 
@@ -68,5 +71,13 @@ router.get(
 
 // 评估详情
 router.get("/records/:id", validateParams(IdParamSchema), controller.getById);
+
+// 保存评估报告内容
+router.put(
+  "/records/:id/report-content",
+  validateParams(IdParamSchema),
+  validateBody(SaveReportSchema),
+  controller.saveReportContent
+);
 
 export default router;

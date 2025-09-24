@@ -22,6 +22,7 @@ import { EditorContent } from "@tiptap/react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ReportTemplateAPI } from "@/services/reportTemplateService";
 import api from "@/services/api";
+import { renderPreviewHtml } from "@/utils/reportPreview";
 import "./TemplateEditor.css";
 // 右侧组件内会导入数据格式，仅此文件不直接使用
 import { buildFieldOptions } from "./utils/fieldOptions";
@@ -91,6 +92,7 @@ const TemplateEditor: React.FC = () => {
     try {
       setSaving(true);
       const json = editor?.getJSON();
+      console.log(json);
       await ReportTemplateAPI.update(templateId, { content: json });
       message.success("保存成功");
     } catch (error: any) {
@@ -100,59 +102,9 @@ const TemplateEditor: React.FC = () => {
     }
   };
 
-  // 解析路径：支持 a.b[0].c 和 goals['目标1'].score
-  const resolvePath = (data: any, path: string) => {
-    try {
-      const parts = path
-        .replace(/\[(\d+)\]/g, ".$1")
-        .replace(/\['([^']+)'\]/g, ".$1")
-        .split(".")
-        .filter(Boolean);
-      let cur: any = data;
-      for (const p of parts) {
-        if (cur == null) return "";
-        cur = cur[p];
-      }
-      if (cur == null) return "";
-      if (typeof cur === "object") return JSON.stringify(cur);
-      return String(cur);
-    } catch {
-      return "";
-    }
-  };
-
-  // 应用单元格规则并替换变量
-  const renderPreviewHtml = (rawHtml: string, reportData: any) => {
-    const replaced = rawHtml.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_m, p1) => {
-      return resolvePath(reportData, String(p1).trim());
-    });
-    const container = document.createElement("div");
-    container.innerHTML = replaced;
-    const cells = container.querySelectorAll("td, th");
-    cells.forEach((cell) => {
-      const rule = (cell as HTMLElement).getAttribute("data-rule");
-      if (!rule) return;
-
-      try {
-        const parsed = JSON.parse(rule);
-        const expr = parsed?.expr as string;
-        if (!expr) return;
-
-        // 执行规则表达式
-        // eslint-disable-next-line no-new-func
-        const fn = new Function("data", `with (data) { return (${expr}); }`);
-        const ruleResult = fn(reportData);
-
-        // 如果规则条件满足，应用背景色
-        if (ruleResult) {
-          (cell as HTMLElement).style.backgroundColor = "#90EE90"; // 浅绿色
-        }
-      } catch (error) {
-        console.warn("规则执行失败:", error);
-      }
-    });
-    return container.innerHTML;
-  };
+  // 统一预览渲染（占位符 + 规则）
+  const renderPreview = (rawHtml: string, reportData: any) =>
+    renderPreviewHtml(rawHtml, reportData);
 
   const openPreview = () => setPreviewOpen(true);
 
@@ -167,7 +119,7 @@ const TemplateEditor: React.FC = () => {
       );
       if (res.data?.success) {
         const reportData = res.data.data;
-        const out = renderPreviewHtml(html, reportData);
+        const out = renderPreview(html, reportData);
         setPreviewHtml(out);
       } else {
         message.error(res.data?.message || "获取报告数据失败");

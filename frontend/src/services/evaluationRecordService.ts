@@ -33,6 +33,12 @@ export const EvaluationRecordAPI = {
       `/evaluation-records/records/${id}`
     );
   },
+  saveReportContent(id: string, content: any) {
+    return api.put<ApiResponse<EvaluationRecordDTO>>(
+      `/evaluation-records/records/${id}/report-content`,
+      { content }
+    );
+  },
   listItems(id: string) {
     return api.get<ApiResponse<any[]>>(
       `/evaluation-records/records/${id}/items`

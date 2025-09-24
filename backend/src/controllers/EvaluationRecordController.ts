@@ -103,4 +103,28 @@ export class EvaluationRecordController {
       ResponseUtil.error(res, "获取评估报告失败");
     }
   };
+
+  // 获取评估记录（含 reportContent）
+  getById = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const record = await this.service.getById(id);
+      if (!record) return ResponseUtil.notFound(res, "评估记录不存在");
+      ResponseUtil.success(res, record, "获取评估记录成功");
+    } catch (error) {
+      ResponseUtil.error(res, "获取评估记录失败");
+    }
+  };
+
+  // 保存报告内容（reportContent: json）
+  saveReportContent = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { content } = req.body as { content: any };
+      const saved = await this.service.saveReportContent(id, content);
+      ResponseUtil.success(res, saved, "保存报告成功");
+    } catch (error: any) {
+      ResponseUtil.error(res, error?.message || "保存报告失败", 400);
+    }
+  };
 }

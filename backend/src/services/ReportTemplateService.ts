@@ -30,12 +30,14 @@ export class ReportTemplateService {
       throw new Error("评估工具不存在");
     }
 
-    // 检查该工具是否已有模板
-    const existingTemplate = await this.templateRepo.findOne({
-      where: { toolId: data.toolId },
-    });
-    if (existingTemplate) {
-      throw new Error("该评估工具已存在模板，每个工具只能绑定一个模板");
+    // 允许同一工具存在多个模板，仅限制“发布状态”唯一
+    if (data.status === "published") {
+      const published = await this.templateRepo.findOne({
+        where: { toolId: data.toolId, status: "published" },
+      });
+      if (published) {
+        throw new Error("该评估工具已存在已发布的模板，发布状态仅能有一个");
+      }
     }
 
     const template = this.templateRepo.create({
@@ -68,7 +70,7 @@ export class ReportTemplateService {
   // 根据工具ID获取模板
   async getTemplateByToolId(toolId: string): Promise<ReportTemplate | null> {
     return await this.templateRepo.findOne({
-      where: { toolId },
+      where: { toolId, status: "published" },
       relations: ["tool"],
     });
   }
@@ -81,18 +83,22 @@ export class ReportTemplateService {
     const template = await this.templateRepo.findOne({ where: { id } });
     if (!template) return null;
 
-    // 如果要更换工具，检查新工具是否已有模板
+    // 如果要更换工具或更新为发布状态，校验“发布状态唯一”
     if (data.toolId && data.toolId !== template.toolId) {
       const tool = await this.toolRepo.findOne({ where: { id: data.toolId } });
       if (!tool) {
         throw new Error("评估工具不存在");
       }
+    }
 
-      const existingTemplate = await this.templateRepo.findOne({
-        where: { toolId: data.toolId },
+    // 若将状态更新为 published，确保同一 toolId 没有其他 published
+    const targetToolId = data.toolId ?? template.toolId;
+    if (data.status === "published") {
+      const published = await this.templateRepo.findOne({
+        where: { toolId: targetToolId, status: "published" },
       });
-      if (existingTemplate && existingTemplate.id !== id) {
-        throw new Error("该评估工具已存在模板，每个工具只能绑定一个模板");
+      if (published && published.id !== id) {
+        throw new Error("该评估工具已存在已发布的模板，发布状态仅能有一个");
       }
     }
 
@@ -110,7 +116,13 @@ export class ReportTemplateService {
   async publishTemplate(id: string): Promise<ReportTemplate | null> {
     const template = await this.templateRepo.findOne({ where: { id } });
     if (!template) return null;
-
+    // 发布前校验同工具唯一
+    const published = await this.templateRepo.findOne({
+      where: { toolId: template.toolId, status: "published" },
+    });
+    if (published && published.id !== id) {
+      throw new Error("该评估工具已存在已发布的模板，发布状态仅能有一个");
+    }
     template.status = "published";
     return await this.templateRepo.save(template);
   }

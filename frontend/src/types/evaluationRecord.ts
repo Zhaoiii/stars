@@ -7,6 +7,7 @@ export interface EvaluationRecordDTO {
   startedAt?: string | null;
   completedAt?: string | null;
   totalScore?: number | null;
+  reportContent?: any | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -76,6 +76,14 @@ const StudentEvaluationsPage: React.FC = () => {
             >
               开始/继续
             </Button>
+            <Button
+              type="link"
+              onClick={() =>
+                navigate(`/students/${id}/evaluations/${record.id}/report`)
+              }
+            >
+              评估报告
+            </Button>
           </Space>
         ),
       },

@@ -7,12 +7,10 @@ import {
   BaseEntity,
   ManyToOne,
   JoinColumn,
-  Unique,
 } from "typeorm";
 import { EvaluationToolNode } from "./EvaluationToolNode";
 
 @Entity("report_templates")
-@Unique(["toolId"]) // 每个评估工具只能绑定一个模板
 export class ReportTemplate extends BaseEntity {
   @PrimaryGeneratedColumn({ type: "bigint" })
   id: string;

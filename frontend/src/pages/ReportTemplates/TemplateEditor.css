@@ -115,6 +115,23 @@
   border-radius: 6px;
   overflow: hidden;
 }
+
+/* 预览容器中的表格规则（与编辑器一致） */
+.editor-page table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* 均分列宽 */
+}
+.editor-page th,
+.editor-page td {
+  border: 1px solid #e1e5e9;
+  text-align: left;
+  vertical-align: top;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
 .ProseMirror table p {
   margin: 0;
 }

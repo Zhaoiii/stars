@@ -29,6 +29,9 @@ const StudentEvaluationsPage = lazy(
 const RunEvaluationPage = lazy(
   () => import("../pages/StudentEvaluations/RunEvaluationPage")
 );
+const ReportEditorPage = lazy(
+  () => import("../pages/StudentEvaluations/ReportEditorPage")
+);
 const LoginForm = lazy(() => import("../pages/LoginForm"));
 const ToolList = lazy(() => import("@/pages/AssessmentConfig/ToolList"));
 const ToolEditor = lazy(() => import("@/pages/AssessmentConfig/ToolEditor"));
@@ -171,6 +174,15 @@ export const routes: AppRoute[] = [
           </Suspense>
         ),
         meta: { title: "开始评估", showInMenu: false },
+      },
+      {
+        path: "/students/:id/evaluations/:recordId/report",
+        element: (
+          <Suspense fallback={null}>
+            <ReportEditorPage />
+          </Suspense>
+        ),
+        meta: { title: "评估报告", showInMenu: false },
       },
       {
         path: "/assessment",
