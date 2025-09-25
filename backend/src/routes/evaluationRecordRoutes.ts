@@ -16,6 +16,7 @@ const UpsertItemSchema = z.object({
   longTermGoalId: z.string().regex(/^\d+$/),
   answer: z.any().nullable().optional(),
   score: z.number().nullable().optional(),
+  remark: z.string().nullable().optional(),
 });
 const SaveReportSchema = z.object({
   content: z.any(),

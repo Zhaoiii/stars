@@ -46,7 +46,12 @@ export const EvaluationRecordAPI = {
   },
   upsertItem(
     id: string,
-    payload: { longTermGoalId: string; answer?: any; score?: number | null }
+    payload: {
+      longTermGoalId: string;
+      answer?: any;
+      score?: number | null;
+      remark?: string | null;
+    }
   ) {
     return api.post<ApiResponse<EvaluationRecordItemDTO>>(
       `/evaluation-records/records/${id}/items`,

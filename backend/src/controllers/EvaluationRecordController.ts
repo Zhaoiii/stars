@@ -68,12 +68,13 @@ export class EvaluationRecordController {
   upsertItem = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const { longTermGoalId, answer, score } = req.body as any;
+      const { longTermGoalId, answer, score, remark } = req.body as any;
       const item = await this.service.upsertItem(
         id,
         longTermGoalId,
         answer,
-        score ?? null
+        score ?? null,
+        remark ?? null
       );
       ResponseUtil.success(res, item, "保存评估条目成功");
     } catch (error) {

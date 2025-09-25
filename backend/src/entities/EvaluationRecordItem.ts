@@ -28,6 +28,9 @@ export class EvaluationRecordItem extends BaseEntity {
   @Column({ type: "float", nullable: true })
   score: number | null; // 该长期目标得分
 
+  @Column({ type: "text", nullable: true })
+  remark: string | null; // 备注
+
   @ManyToOne(() => EvaluationRecord, (e) => e.items, { onDelete: "CASCADE" })
   @JoinColumn({ name: "evaluation_id" })
   evaluation: EvaluationRecord;

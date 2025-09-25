@@ -18,6 +18,7 @@ export interface EvaluationRecordItemDTO {
   longTermGoalId: string;
   answer?: any;
   score?: number | null;
+  remark?: string | null;
   createdAt: string;
   updatedAt: string;
 }

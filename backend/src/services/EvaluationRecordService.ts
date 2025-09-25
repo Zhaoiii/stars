@@ -83,7 +83,8 @@ export class EvaluationRecordService {
     recordId: string,
     longTermGoalId: string,
     answer: any,
-    score: number | null
+    score: number | null,
+    remark?: string | null
   ): Promise<EvaluationRecordItem> {
     const record = await this.recordRepo.findOne({ where: { id: recordId } });
     if (!record) throw new Error("评估记录不存在");
@@ -99,10 +100,14 @@ export class EvaluationRecordService {
         longTermGoalId,
         answer,
         score,
+        remark: remark ?? null,
       });
     } else {
       item.answer = answer;
       item.score = score;
+      if (remark !== undefined) {
+        item.remark = remark;
+      }
     }
     return await this.itemRepo.save(item);
   }
