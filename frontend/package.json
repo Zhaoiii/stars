@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
+    "@heroicons/react": "^2.2.0",
     "@tiptap/extension-color": "^3.5.0",
     "@tiptap/extension-font-family": "^3.5.0",
     "@tiptap/extension-placeholder": "^2.6.6",
@@ -26,6 +27,7 @@
     "@tiptap/starter-kit": "^2.6.6",
     "antd": "^5.12.8",
     "axios": "^1.6.2",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.15",
     "html2canvas": "^1.4.1",
     "html2pdf": "^0.0.11",

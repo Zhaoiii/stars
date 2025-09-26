@@ -45,7 +45,6 @@ export class StudentController {
       const result = await this.studentService.searchStudents({
         keyword: searchParams.keyword,
         teamId: searchParams.teamId,
-        gender: searchParams.gender,
         page: searchParams.page,
         limit: searchParams.pageSize,
       });

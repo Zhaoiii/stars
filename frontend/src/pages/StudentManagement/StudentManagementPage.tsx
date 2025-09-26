@@ -17,6 +17,7 @@ import {
   DeleteOutlined,
   TeamOutlined,
   ProfileOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { Student, Gender, Team } from "@/types/student";
@@ -24,14 +25,17 @@ import { User } from "@/types/user";
 import { StudentService } from "@/services/studentService";
 import useTable from "@/hooks/useTable";
 import StudentFormModal from "./components/StudentFormModal";
+import StudentCourseView from "./components/StudentCourseView";
 
 const StudentManagementPage: React.FC = () => {
   const navigate = useNavigate();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [courseViewVisible, setCourseViewVisible] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [form] = Form.useForm();
 
-  const [tableProps, { reset }] = useTable((params) => {
+  const [tableProps, { reset }] = useTable<Student>((params) => {
     const values = form.getFieldsValue();
     return StudentService.searchStudents({
       ...params,
@@ -54,6 +58,18 @@ const StudentManagementPage: React.FC = () => {
     if (needRefresh) reset();
     setModalVisible(false);
     setEditingStudent(null);
+  };
+
+  // 打开课程查看
+  const handleViewCourses = (student: Student) => {
+    setSelectedStudent(student);
+    setCourseViewVisible(true);
+  };
+
+  // 关闭课程查看
+  const handleCloseCourseView = () => {
+    setCourseViewVisible(false);
+    setSelectedStudent(null);
   };
 
   // 删除学生
@@ -82,19 +98,6 @@ const StudentManagementPage: React.FC = () => {
   };
 
   // 计算年龄
-  const calculateAge = (birthDate: string) => {
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birth.getDate())
-    ) {
-      age--;
-    }
-    return age;
-  };
 
   // 表格列定义
   const columns = [
@@ -167,6 +170,13 @@ const StudentManagementPage: React.FC = () => {
               onClick={() => handleOpenModal(record)}
             />
           </Tooltip>
+          <Tooltip title="课程安排">
+            <Button
+              type="link"
+              icon={<CalendarOutlined />}
+              onClick={() => handleViewCourses(record)}
+            />
+          </Tooltip>
           <Tooltip title="评估记录">
             <Button
               type="link"
@@ -209,12 +219,18 @@ const StudentManagementPage: React.FC = () => {
         </Button>
       </Flex>
       {/* 学生列表 */}
-      <Table columns={columns} {...tableProps} />
+      <Table<Student> columns={columns} {...tableProps} />
 
       <StudentFormModal
         open={modalVisible}
         initialValues={editingStudent}
         handleCloseModal={handleCloseModal}
+      />
+
+      <StudentCourseView
+        visible={courseViewVisible}
+        student={selectedStudent}
+        onCancel={handleCloseCourseView}
       />
     </div>
   );

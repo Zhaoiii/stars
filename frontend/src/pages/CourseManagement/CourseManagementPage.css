@@ -1,0 +1,97 @@
+.course-management-page {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content h1 {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.page-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.course-tabs {
+  height: 100%;
+}
+
+.course-tabs .ant-tabs-content-holder {
+  height: calc(100vh - 200px);
+  overflow: auto;
+}
+
+.course-tabs .ant-tabs-tabpane {
+  height: 100%;
+  padding: 0;
+}
+
+.course-detail-modal .ant-modal-body {
+  padding: 24px;
+}
+
+.course-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: #666;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  color: #333;
+  flex: 1;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .course-management-page {
+    padding: 16px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .header-content h1 {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .course-tabs .ant-tabs-content-holder {
+    height: calc(100vh - 150px);
+  }
+}

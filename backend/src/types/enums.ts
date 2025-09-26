@@ -30,3 +30,25 @@ export enum EvaluationScoringType {
   SINGLE_CHOICE = "single_choice",
   MULTIPLE_CHOICE = "multiple_choice",
 }
+
+// 课程类型
+export enum CourseType {
+  EVALUATION = "evaluation",
+  INDIVIDUAL_TRAINING = "individual_training",
+}
+
+// 课程状态
+export enum CourseStatus {
+  SCHEDULED = "scheduled",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
+}
+
+// 重复模式
+export enum RepeatMode {
+  NONE = "none",
+  DAILY = "daily",
+  WEEKLY = "weekly",
+  MONTHLY = "monthly",
+}

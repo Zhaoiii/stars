@@ -4,6 +4,7 @@ import {
   TeamOutlined,
   BookOutlined,
   ToolOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import { UserRole } from "../types/user";
 import type { MenuProps } from "antd";
@@ -50,6 +51,9 @@ const TemplateEditor = lazy(
 );
 const TemplateManagement = lazy(
   () => import("@/pages/ReportTemplates/TemplateManagement")
+);
+const CourseManagementPage = lazy(
+  () => import("@/pages/CourseManagement/CourseManagementPage")
 );
 
 // 路由配置接口
@@ -158,6 +162,22 @@ export const routes: AppRoute[] = [
         },
       },
       {
+        path: "/courses",
+        element: (
+          <Suspense fallback={null}>
+            <CourseManagementPage />
+          </Suspense>
+        ),
+        meta: {
+          title: "课程管理",
+          icon: <CalendarOutlined />,
+          requiresAuth: true,
+          requiredRole: UserRole.TEACHER,
+          showInMenu: true,
+          order: 5,
+        },
+      },
+      {
         path: "/students/:id/evaluations",
         element: (
           <Suspense fallback={null}>
@@ -199,7 +219,7 @@ export const routes: AppRoute[] = [
           requiresAuth: true,
           requiredRole: UserRole.TEACHER,
           showInMenu: true,
-          order: 5,
+          order: 6,
         },
         children: [
           {
@@ -239,7 +259,7 @@ export const routes: AppRoute[] = [
           requiresAuth: true,
           requiredRole: UserRole.ADMIN,
           showInMenu: true,
-          order: 6,
+          order: 7,
         },
       },
       {
@@ -257,7 +277,7 @@ export const routes: AppRoute[] = [
           requiresAuth: true,
           requiredRole: UserRole.ADMIN,
           showInMenu: true,
-          order: 8,
+          order: 9,
         },
       },
       {
@@ -289,7 +309,7 @@ export const routes: AppRoute[] = [
           requiresAuth: true,
           requiredRole: UserRole.ADMIN,
           showInMenu: true,
-          order: 7,
+          order: 8,
         },
       },
     ],

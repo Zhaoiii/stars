@@ -1,0 +1,102 @@
+.course-list {
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.list-toolbar {
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.toolbar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.search-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-content {
+  flex: 1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.course-table {
+  height: 100%;
+}
+
+.course-table .ant-table-tbody > tr > td {
+  padding: 8px 12px;
+}
+
+.course-title {
+  font-weight: 500;
+  color: #333;
+}
+
+.student-info,
+.teacher-info,
+.time-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.info-icon {
+  color: #666;
+  font-size: 12px;
+}
+
+.location-text {
+  color: #666;
+}
+
+.no-location {
+  color: #ccc;
+  font-style: italic;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .toolbar-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-section,
+  .filter-section {
+    justify-content: center;
+  }
+
+  .search-section .ant-input {
+    width: 100% !important;
+  }
+
+  .filter-section {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .course-table {
+    font-size: 12px;
+  }
+
+  .course-table .ant-table-tbody > tr > td {
+    padding: 6px 8px;
+  }
+}

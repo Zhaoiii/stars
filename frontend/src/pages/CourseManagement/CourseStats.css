@@ -1,0 +1,199 @@
+.course-stats {
+  padding: 16px;
+}
+
+.course-stats-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.stats-card {
+  height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.progress-section {
+  padding: 16px 0;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.progress-icon {
+  font-size: 16px;
+  color: #1890ff;
+}
+
+.progress-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.progress-text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+.type-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.type-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.type-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.type-label {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.type-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.type-bar {
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.type-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.type-fill.evaluation {
+  background: linear-gradient(90deg, #1890ff, #40a9ff);
+}
+
+.type-fill.individual-training {
+  background: linear-gradient(90deg, #52c41a, #73d13d);
+}
+
+.status-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.scheduled {
+  background: #1890ff;
+}
+
+.status-dot.in-progress {
+  background: #faad14;
+}
+
+.status-dot.completed {
+  background: #52c41a;
+}
+
+.status-dot.cancelled {
+  background: #ff4d4f;
+}
+
+.status-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+
+.status-label {
+  font-size: 14px;
+  color: #333;
+}
+
+.status-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .course-stats {
+    padding: 8px;
+  }
+
+  .stats-card {
+    margin-bottom: 16px;
+  }
+
+  .progress-section {
+    padding: 12px 0;
+  }
+
+  .progress-header {
+    margin-bottom: 12px;
+  }
+
+  .progress-title {
+    font-size: 14px;
+  }
+
+  .type-distribution,
+  .status-distribution {
+    gap: 12px;
+  }
+
+  .type-item,
+  .status-item {
+    gap: 8px;
+  }
+
+  .type-label,
+  .status-label {
+    font-size: 13px;
+  }
+
+  .type-value,
+  .status-value {
+    font-size: 14px;
+  }
+}

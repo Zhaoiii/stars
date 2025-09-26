@@ -1,0 +1,398 @@
+.calendar-board {
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-toolbar {
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.toolbar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.toolbar-left,
+.toolbar-center,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calendar-content {
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 600px;
+}
+
+.calendar-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  font-size: 16px;
+  color: #666;
+}
+
+/* 月视图样式 */
+.calendar-month-view {
+  width: 100%;
+}
+
+.calendar-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.calendar-weekday {
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 500;
+  color: #666;
+  border-right: 1px solid #f0f0f0;
+}
+
+.calendar-weekday:last-child {
+  border-right: none;
+}
+
+.calendar-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  min-height: 120px;
+}
+
+.calendar-day {
+  border-right: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
+}
+
+.calendar-day:last-child {
+  border-right: none;
+}
+
+.calendar-date-cell {
+  height: 100%;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.calendar-date-cell.today {
+  background: #e6f7ff;
+}
+
+.calendar-date-cell.other-month {
+  background: #fafafa;
+  color: #ccc;
+}
+
+.calendar-date-cell:hover {
+  background: #f5f5f5;
+}
+
+.date-number {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.date-events {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 周视图专属：紧凑滚动容器，提升空间利用率 */
+.week-scroll {
+  overflow-y: auto;
+  /* 拉长可视高度，提高单列可展示的课程条目数量 */
+  max-height: 560px;
+  padding-right: 4px;
+}
+
+.calendar-event-item.compact {
+  padding: 2px 6px;
+  font-size: 12px;
+  line-height: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.event-time-inline {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 11px;
+}
+
+/* 周视图样式 */
+.calendar-week-view {
+  width: 100%;
+}
+
+.calendar-week-view .calendar-header {
+  background: #fafafa;
+}
+
+.calendar-week-view .calendar-weekday {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 8px;
+}
+
+.weekday-name {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.weekday-date {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.calendar-week-view .calendar-week {
+  /* 提高周视图整体高度以承载更多内容 */
+  min-height: 380px;
+}
+
+/* 日视图样式 */
+.calendar-day-view {
+  width: 100%;
+  padding: 24px;
+}
+
+.day-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.day-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.day-event-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-left: 4px solid;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.day-event-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.event-time {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  min-width: 120px;
+  margin-right: 16px;
+}
+
+.event-content {
+  flex: 1;
+}
+
+.event-content .event-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.event-details {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #666;
+}
+
+.event-details span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.event-type {
+  display: flex;
+  gap: 8px;
+}
+
+.no-events {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  padding: 40px;
+}
+
+/* 事件样式 */
+.calendar-event-item {
+  display: flex;
+  align-items: center;
+  padding: 2px 6px;
+  margin: 2px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: white;
+  border-left: 3px solid;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-event-item:hover {
+  transform: translateX(2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.event-icon {
+  margin-right: 4px;
+  font-size: 10px;
+}
+
+.event-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-event-more {
+  font-size: 11px;
+  color: #666;
+  text-align: center;
+  padding: 2px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.calendar-event-more:hover {
+  background: #e6f7ff;
+  color: #1890ff;
+}
+
+.calendar-legend {
+  margin-top: 16px;
+  border-radius: 8px;
+}
+
+.legend-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+}
+
+.legend-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-title {
+  font-weight: 500;
+  color: #666;
+  white-space: nowrap;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .toolbar-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .toolbar-left,
+  .toolbar-center,
+  .toolbar-right {
+    justify-content: center;
+  }
+
+  .toolbar-center .ant-typography {
+    font-size: 16px !important;
+    min-width: 150px !important;
+  }
+
+  .legend-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .calendar-week {
+    min-height: 80px;
+  }
+
+  .calendar-date-cell {
+    padding: 4px;
+  }
+
+  .date-number {
+    font-size: 12px;
+  }
+
+  .calendar-event-item {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+
+  .calendar-week-view .calendar-week {
+    min-height: 120px;
+  }
+
+  .day-event-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .event-time {
+    min-width: auto;
+    margin-right: 0;
+  }
+
+  .event-details {
+    flex-direction: column;
+    gap: 4px;
+  }
+}

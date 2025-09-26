@@ -7,11 +7,13 @@ import {
   BaseEntity,
   ManyToOne,
   ManyToMany,
+  OneToMany,
   JoinColumn,
 } from "typeorm";
 import { UserRole, UserStatus } from "../types/enums";
 import { Team } from "./Team";
 import { Student } from "./Student";
+import { Course } from "./Course";
 
 @Entity("users")
 export class User extends BaseEntity {
@@ -67,4 +69,8 @@ export class User extends BaseEntity {
   // 用户与学生的关系：多个教师可以教授多个学生
   @ManyToMany(() => Student, (student) => student.teachers)
   students: Student[];
+
+  // 用户与课程的关系：一个教师可以有多个课程
+  @OneToMany(() => Course, (course) => course.teacher)
+  courses: Course[];
 }

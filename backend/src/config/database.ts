@@ -9,6 +9,7 @@ import { MultipleChoiceAnswer } from "../entities/MultipleChoiceAnswer";
 import { EvaluationRecord } from "../entities/EvaluationRecord";
 import { EvaluationRecordItem } from "../entities/EvaluationRecordItem";
 import { ReportTemplate } from "../entities/ReportTemplate";
+import { Course } from "../entities/Course";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -33,6 +34,7 @@ export const AppDataSource = new DataSource({
     EvaluationRecord,
     EvaluationRecordItem,
     ReportTemplate,
+    Course,
   ],
   migrations: ["src/migrations/*.ts"],
   subscribers: ["src/subscriber/*.ts"],

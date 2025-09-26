@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { StudentController } from "../controllers/StudentController";
+import { StudentController } from "../controllers/studentController";
 import { authMiddleware, requireTeacherOrAdmin } from "../middleware/auth";
 import { validate } from "../middleware/validation";
 import {
