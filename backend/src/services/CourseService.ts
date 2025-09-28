@@ -239,6 +239,8 @@ export class CourseService {
       end: new Date(course.endTime),
       type: course.type,
       status: course.status,
+      studentId: course.studentId,
+      teacherId: course.teacherId,
       studentName: course.student?.name || "",
       teacherName: course.teacher?.name || course.teacher?.username || "",
       location: course.location,

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Card, Button, Select, Space, Tag, Tooltip, Typography } from "antd";
+import { Card, Button, Select, Space, Tag, Typography } from "antd";
 import {
   PlusOutlined,
   CalendarOutlined,
@@ -49,8 +49,8 @@ const CalendarBoard: React.FC<CalendarBoardProps> = ({
   const [view, setView] = useState<"month" | "week" | "day">("month");
   const [filterType, setFilterType] = useState<CourseType | "all">("all");
   const [filterStatus, setFilterStatus] = useState<CourseStatus | "all">("all");
-  const [filterStudents, setFilterStudents] = useState<string[]>([]);
-  const [filterTeachers, setFilterTeachers] = useState<string[]>([]);
+  const [filterStudents, setFilterStudents] = useState<number[]>([]);
+  const [filterTeachers, setFilterTeachers] = useState<number[]>([]);
   const {
     options: studentOptions,
     loading: studentLoading,
@@ -67,9 +67,15 @@ const CalendarBoard: React.FC<CalendarBoardProps> = ({
     return events.filter((event) => {
       if (filterType !== "all" && event.type !== filterType) return false;
       if (filterStatus !== "all" && event.status !== filterStatus) return false;
-      if (filterStudents.length > 0 && !filterStudents.includes(event.id))
+      if (
+        filterStudents.length > 0 &&
+        !filterStudents.includes(event.studentId)
+      )
         return false;
-      if (filterTeachers.length > 0 && !filterTeachers.includes(event.id))
+      if (
+        filterTeachers.length > 0 &&
+        !filterTeachers.includes(event.teacherId)
+      )
         return false;
       return true;
     });

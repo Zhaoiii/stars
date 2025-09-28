@@ -112,6 +112,8 @@ export interface CalendarEvent {
   end: Date;
   type: CourseType;
   status: CourseStatus;
+  studentId: number;
+  teacherId: number;
   studentName: string;
   teacherName: string;
   location?: string;
